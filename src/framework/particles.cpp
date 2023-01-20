@@ -5,7 +5,8 @@
 #include "main/includes.h"
 #include "framework.h"
 #include "image.h"
-
+#include "particles.h"
+/*
 Particles::Particles(Color col) {
 	c = col;
 }
@@ -40,3 +41,5 @@ void Particles::Update() {
 		}
 	}
 }
+
+*/

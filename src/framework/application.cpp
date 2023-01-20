@@ -17,6 +17,12 @@ Application::Application(const char* caption, int width, int height)
 	this->keystate = SDL_GetKeyboardState(nullptr);
 
 	this->framebuffer.Resize(w, h);
+
+	this->LastClick = Vector2(mouse_position.x, mouse_position.y);
+	this->global_col = Color::BLACK;
+	this->framebuffer.Fill(Color::WHITE);
+	this->DRAWING = false;
+	this->MODE = FREEHAND;
 }
 
 Application::~Application()
@@ -26,6 +32,7 @@ Application::~Application()
 
 void Application::Init(void)
 {
+	if (!toolbar.LoadTGA("images/toolbar.tga")) std::cout << "Toolbar not found" << std::endl;;
 	std::cout << "Initiating app..." << std::endl;
 }
 
@@ -35,40 +42,114 @@ void Application::Render(void)
 	// ...
 
 	framebuffer.Render();
+	framebuffer.Fill(Color::WHITE);
+	for (int i = 0; i <= 50; i++) for (int j = 0; j < framebuffer.width; j++) framebuffer.SetPixelSafe(j, framebuffer.height - i, Color(51));
+	framebuffer.DrawImagePixels(toolbar, 0, 0, true);
+	int centerx = this->window_width / 2;
+	int centery = this->window_height / 2;
+	framebuffer.DrawLineBresenham(centerx, centery, centerx + 200 * cos(time), centery + 200 * sin(time), Color::BLACK);
+
 }
 
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-
+	int w, h;
+	SDL_GetWindowSize(window, &w, &h);
+	framebuffer.Resize(w, h);
 }
 
 //keyboard press event 
 void Application::OnKeyPressed( SDL_KeyboardEvent event )
 {
+	int r;
 	// KEY CODES: https://wiki.libsdl.org/SDL2/SDL_Keycode
-	switch(event.keysym.sym) {
-		case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
+	switch (event.keysym.sym) {
+	case SDLK_l: MODE = LINE; break;
+
+	case SDLK_c: MODE = CIRCLE; break;
+
+	case SDLK_d: MODE = FREEHAND; break;
+
+	case SDLK_f: MODE = FILL_CIRCLE; break;
+
+		// Backspace fills the canvas with white (erase)
+	case SDLK_BACKSPACE: framebuffer.Fill(Color::WHITE); break;
+
+	case SDLK_t: framebuffer.DrawImagePixels(toolbar, 0, 0, true); break;
+
+	case SDLK_p: MODE = PARTICLE; break;
+
+	case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
+
 	}
 }
 
 void Application::OnMouseButtonDown( SDL_MouseButtonEvent event )
 {
-	if (event.button == SDL_BUTTON_LEFT) {
+	bool onToolbar = (framebuffer.height - 50) < mouse_position.y;
 
+	if (event.button == SDL_BUTTON_LEFT && !onToolbar) {
+		LastClick = mouse_position;
+		DRAWING = true;
+	}
+	else if (event.button == SDL_BUTTON_LEFT && onToolbar) {
+		int i = 0;
+		// "NEW" Button
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) framebuffer.Fill(Color::WHITE);
+
+		i++;
+		// "SAVE" Button
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50 && framebuffer.SaveTGA("../../myDrawing.tga")) std::cout << "SAVED SUCCESSFULLY" << std::endl;
+
+		i++;
+		// COLOR Buttons
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::BLACK; }
+		i++;
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::RED; }
+		i++;
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::GREEN; }
+		i++;
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::BLUE; }
+		i++;
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::YELLOW; }
+		i++;
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::PURPLE; }
+		i++;
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::CYAN; }
+		i++;
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::WHITE; }
 	}
 }
 
 void Application::OnMouseButtonUp( SDL_MouseButtonEvent event )
 {
-	if (event.button == SDL_BUTTON_LEFT) {
-
+	int r = (int)sqrt((mouse_position.x - LastClick.x) * (mouse_position.x - LastClick.x) + (mouse_position.y - LastClick.y) * (mouse_position.y - LastClick.y));
+	bool onToolbar = mouse_position.x;
+	if (event.button == SDL_BUTTON_LEFT && DRAWING) {
+		switch (MODE) {
+		case CIRCLE:
+			framebuffer.DrawCircle(LastClick.x, LastClick.y, r, global_col, false);
+			break;
+		case FILL_CIRCLE:
+			framebuffer.DrawCircle(LastClick.x, LastClick.y, r, global_col, true);
+			break;
+		case LINE:
+			framebuffer.DrawLineBresenham(LastClick.x, LastClick.y, mouse_position.x, mouse_position.y, global_col);
+			break;
+		default:
+			break;
+		}
+		DRAWING = false;
 	}
 }
 
 void Application::OnMouseMove(SDL_MouseButtonEvent event)
 {
-	
+	if (DRAWING && MODE == FREEHAND) {
+		framebuffer.DrawLineBresenham(LastClick.x, LastClick.y, mouse_position.x, mouse_position.y, global_col);
+		LastClick = mouse_position;
+	}
 }
 
 void Application::OnFileChanged(const char* filename)

@@ -378,3 +378,148 @@ void FloatImage::Resize(unsigned int width, unsigned int height)
 	this->height = height;
 	pixels = new_pixels;
 }
+
+
+// Draw line using DDA method
+void Image::DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c) {
+	int dx = x1 - x0;
+	int dy = y1 - y0;
+
+	float d = std::max(abs(dx), abs(dy));
+
+	float vx = (float)dx / d;
+	float vy = (float)dy / d;
+
+	float pixelX = (float)x0;
+	float pixelY = (float)y0;
+
+	for (int i = 0; i < d; i++) {
+		SetPixel(floor(pixelX), floor(pixelY), c);
+		pixelX += vx;
+		pixelY += vy;
+	}
+}
+
+// Draw line using Besenham method
+void Image::DrawLineBresenham(int x0, int y0, int x1, int y1, const Color& c) {
+	float  inc_E, inc_NE, dx, dy, d;
+	int  x, y, n, startX, startY, finalX, finalY;
+	
+	startX = x0;
+	startY = y0;
+
+	finalX = x1;
+	finalY = y1;
+	
+	if (x1 < x0) {
+		startX = x1;
+		startY = y1;
+
+		finalX = x0;
+		finalY = y0;
+	}
+
+	dx = finalX - startX;
+	dy = finalY - startY;
+
+	inc_E = 2 * dy;
+	inc_NE = 2 * (dy - dx);
+	d = 2 * dy - dx;
+	 
+	x = startX;
+	y = startY;
+
+	SetPixelSafe(x, y, c);
+	if (abs(dy) < dx) {
+		while (x < finalX) {
+			if (d <= 0) {
+				d = d + inc_E;
+				x++;
+			}
+			else {
+				d = d + inc_NE;
+				x++;
+				if (dy < 0) { y--; }
+				else { y++; }
+			}
+			SetPixelSafe(x, y, c);
+		}
+	}
+	else {
+		while (x < finalX) {
+			if (d <= 0) {
+				d = d - inc_E;
+				if (dy < 0) { y--; }
+				else { y++; }
+			}
+			else {
+				d = d + inc_NE;
+				x++;
+				if (dy < 0) { y--; }
+				else { y++; }
+			}
+			SetPixelSafe(x, y, c);
+		}
+	}
+}
+
+void Image::DrawCircle(int x, int y, int r, const Color& c, bool fill) {
+	int centerX, centerY, x0, y0, v;
+	centerX = x;
+	centerY = y;
+	x0 = 0;
+	y0 = r;
+	v = 1 - r;
+	SetPixelSafe(centerX + x0, centerY + y0, c);
+	SetPixelSafe(centerX - x0, centerY + y0, c);
+	SetPixelSafe(centerX + x0, centerY - y0, c);
+	SetPixelSafe(centerX - x0, centerY - y0, c);
+	SetPixelSafe(centerX + y0, centerY + x0, c);
+	SetPixelSafe(centerX - y0, centerY + x0, c);
+	SetPixelSafe(centerX + y0, centerY - x0, c);
+	SetPixelSafe(centerX - y0, centerY - x0, c);
+	while (x0 <= y0) {
+		if (v < 0) {
+			v += 2 * x0 + 3;
+			x0++;
+		}
+		else {
+			v += 2 * (x0 - y0) + 5;
+			x0++;
+			y0--;
+		}
+		SetPixelSafe(centerX + x0, centerY + y0, c);
+		SetPixelSafe(centerX - x0, centerY + y0, c);
+		SetPixelSafe(centerX + x0, centerY - y0, c);
+		SetPixelSafe(centerX - x0, centerY - y0, c);
+		SetPixelSafe(centerX + y0, centerY + x0, c);
+		SetPixelSafe(centerX - y0, centerY + x0, c);
+		SetPixelSafe(centerX + y0, centerY - x0, c);
+		SetPixelSafe(centerX - y0, centerY - x0, c);
+		if (fill) {
+			for (int i = centerX + x0; i > centerX - x0; i--) {
+				SetPixelSafe(i, centerY + y0, c);
+				SetPixelSafe(i, centerY - y0, c);
+			}
+			for (int i = centerX + y0; i > centerX - y0; i--) {
+				SetPixelSafe(i, centerY + x0, c);
+				SetPixelSafe(i, centerY - x0, c);
+			}
+
+		}
+	}
+	if (fill) for (int i = centerX + r; i > centerX - r; i--) SetPixelSafe(i, centerY, c);
+}
+
+
+void Image::DrawImagePixels(const Image& image, int x, int y, bool top) {
+	int startY = y;
+	if (top) startY = this->height - image.height;
+
+	for (int x0 = x; x0 < image.width; x0++) {
+		for (int y0 = 0; y0 < image.height; y0++) {
+			Color c0 = image.GetPixel(x0, y0);
+			SetPixelSafe(x0, startY + y0, c0);
+		}
+	}
+}

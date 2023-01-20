@@ -7,6 +7,13 @@
 #include "main/includes.h"
 #include "framework.h"
 #include "image.h"
+#include "particles.h"
+
+#define CIRCLE 1
+#define FILL_CIRCLE 2
+#define LINE 3
+#define PARTICLE 4
+#define FREEHAND 5
 
 class Application
 {
@@ -23,8 +30,14 @@ public:
 	// Input
 	const Uint8* keystate;
 	int mouse_state; // Tells which buttons are pressed
+	int MODE;
+	Vector2 LastClick; 
 	Vector2 mouse_position; // Last mouse position
 	Vector2 mouse_delta; // Mouse movement in the last frame
+
+	Color global_col;
+	bool DRAWING;
+	int tool;
 
 	void OnKeyPressed(SDL_KeyboardEvent event);
 	void OnMouseButtonDown(SDL_MouseButtonEvent event);
@@ -34,6 +47,7 @@ public:
 
 	// CPU Global framebuffer
 	Image framebuffer;
+	Image toolbar;
 
 	// Constructor and main methods
 	Application(const char* caption, int width, int height);
