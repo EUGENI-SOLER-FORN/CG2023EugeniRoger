@@ -422,15 +422,19 @@ void Image::DrawLineBresenham(int x0, int y0, int x1, int y1, const Color& c) {
 	dx = finalX - startX;
 	dy = finalY - startY;
 
-	inc_E = 2 * dy;
-	inc_NE = 2 * (dy - dx);
-	d = 2 * dy - dx;
+	
 	 
 	x = startX;
 	y = startY;
 
+	float absDy = dy;
+	absDy = abs(absDy);
+	
 	SetPixelSafe(x, y, c);
-	if (abs(dy) < dx) {
+	if (absDy < dx) {
+		inc_E = 2 * absDy;
+		inc_NE = 2 * (absDy - dx);
+		d = 2 * absDy - dx;
 		while (x < finalX) {
 			if (d <= 0) {
 				d = d + inc_E;
@@ -446,14 +450,18 @@ void Image::DrawLineBresenham(int x0, int y0, int x1, int y1, const Color& c) {
 		}
 	}
 	else {
-		while (x < finalX) {
-			if (d <= 0) {
+		inc_E = 2 * dx;
+		inc_NE = 2 * (dx - absDy);
+		d = 2 * dx - absDy;
+
+		while (y != finalY) {
+			if (0 < d) {
 				d = d - inc_E;
 				if (dy < 0) { y--; }
 				else { y++; }
 			}
 			else {
-				d = d + inc_NE;
+				d = d - inc_NE;
 				x++;
 				if (dy < 0) { y--; }
 				else { y++; }
