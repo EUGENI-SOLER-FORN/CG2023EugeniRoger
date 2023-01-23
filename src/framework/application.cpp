@@ -32,7 +32,7 @@ Application::~Application()
 
 void Application::Init(void)
 {
-	if (!toolbar.LoadTGA("images/toolbar.tga")) std::cout << "Toolbar not found" << std::endl;;
+	if (!toolbar.LoadTGA("res/images/toolbar.tga")) std::cout << "Toolbar not found" << std::endl;;
 	std::cout << "Initiating app..." << std::endl;
 }
 
@@ -42,13 +42,8 @@ void Application::Render(void)
 	// ...
 
 	framebuffer.Render();
-	framebuffer.Fill(Color::WHITE);
 	for (int i = 0; i <= 50; i++) for (int j = 0; j < framebuffer.width; j++) framebuffer.SetPixelSafe(j, framebuffer.height - i, Color(51));
 	framebuffer.DrawImagePixels(toolbar, 0, 0, true);
-	int centerx = this->window_width / 2;
-	int centery = this->window_height / 2;
-	framebuffer.DrawLineBresenham(centerx, centery, centerx + 200 * cos(time), centery + 200 * sin(time), Color::BLACK);
-
 }
 
 // Called after render
@@ -75,10 +70,13 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 
 		// Backspace fills the canvas with white (erase)
 	case SDLK_BACKSPACE: framebuffer.Fill(Color::WHITE); break;
+	case SDLK_n: framebuffer.Fill(Color::WHITE); break;
 
 	case SDLK_t: framebuffer.DrawImagePixels(toolbar, 0, 0, true); break;
 
 	case SDLK_p: MODE = PARTICLE; break;
+
+	case SDLK_s: if(framebuffer.SaveTGA("../../myDrawing.tga")) std::cout << "SAVED SUCCESSFULLY" << std::endl; break;
 
 	case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
 
@@ -119,6 +117,17 @@ void Application::OnMouseButtonDown( SDL_MouseButtonEvent event )
 		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::CYAN; }
 		i++;
 		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::WHITE; }
+		i += 2;
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { MODE = FREEHAND; }
+		i++;
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { MODE = LINE; }
+		i++;
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { MODE = CIRCLE; }
+		i++;
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { MODE = FILL_CIRCLE; }
+		i++;
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { MODE = PARTICLE; }
+
 	}
 }
 
