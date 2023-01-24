@@ -38,6 +38,7 @@ public:
 	Color global_col;
 	bool DRAWING;
 	int tool;
+	Particles* world;
 
 	void OnKeyPressed(SDL_KeyboardEvent event);
 	void OnMouseButtonDown(SDL_MouseButtonEvent event);

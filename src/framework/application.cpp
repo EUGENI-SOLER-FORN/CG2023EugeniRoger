@@ -23,7 +23,11 @@ Application::Application(const char* caption, int width, int height)
 	this->framebuffer.Fill(Color::WHITE);
 	this->DRAWING = false;
 	this->MODE = FREEHAND;
+	this->world = new Particles(global_col);
+
 }
+
+
 
 Application::~Application()
 {
@@ -34,13 +38,21 @@ void Application::Init(void)
 {
 	if (!toolbar.LoadTGA("res/images/toolbar.tga")) std::cout << "Toolbar not found" << std::endl;;
 	std::cout << "Initiating app..." << std::endl;
+	world = new Particles(Color::WHITE);
+	world->Init(window_height);
 }
 
 // Render one frame
 void Application::Render(void)
 {
 	// ...
-
+	if (MODE == PARTICLE) {
+		
+		
+		world->Render(framebuffer);
+		
+			
+	}
 	framebuffer.Render();
 	for (int i = 0; i <= 50; i++) for (int j = 0; j < framebuffer.width; j++) framebuffer.SetPixelSafe(j, framebuffer.height - i, Color(51));
 	framebuffer.DrawImagePixels(toolbar, 0, 0, true);
@@ -49,6 +61,7 @@ void Application::Render(void)
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
+	world->Update(window_height);
 	int w, h;
 	SDL_GetWindowSize(window, &w, &h);
 	framebuffer.Resize(w, h);
@@ -126,7 +139,8 @@ void Application::OnMouseButtonDown( SDL_MouseButtonEvent event )
 		i++;
 		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { MODE = FILL_CIRCLE; }
 		i++;
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { MODE = PARTICLE; }
+		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { MODE = PARTICLE;
+		}
 
 	}
 }
@@ -145,7 +159,7 @@ void Application::OnMouseButtonUp( SDL_MouseButtonEvent event )
 			break;
 		case LINE:
 			framebuffer.DrawLineBresenham(LastClick.x, LastClick.y, mouse_position.x, mouse_position.y, global_col);
-			break;
+			break;		
 		default:
 			break;
 		}

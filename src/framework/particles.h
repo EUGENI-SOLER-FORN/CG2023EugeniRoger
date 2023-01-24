@@ -5,7 +5,7 @@
 #include "main/includes.h"
 #include "framework.h"
 #include "image.h"
-/*
+
 class Particles 
 {
 	public:
@@ -22,8 +22,7 @@ class Particles
 		Particle p[100];
 		Color c;
 		Particles(Color col);
-		void Init();
+		void Init(int height);
 		void Render(Image buff);
-		void Update();
+		void Update(int height);
 };
-*/
