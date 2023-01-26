@@ -23,8 +23,6 @@ Application::Application(const char* caption, int width, int height)
 	this->framebuffer.Fill(Color::WHITE);
 	this->DRAWING = false;
 	this->MODE = FREEHAND;
-	this->world = new World(global_col);
-
 }
 
 
@@ -36,10 +34,11 @@ Application::~Application()
 
 void Application::Init(void)
 {
-	if (!toolbar.LoadPNG("images/toolbar.png")) std::cout << "Toolbar not found" << std::endl;;
+	if (!toolbar.LoadPNG("images/toolbarFunctionsAdded.png")) std::cout << "Toolbar not found" << std::endl;;
 	std::cout << "Initiating app..." << std::endl;
 	world = new World(Color::WHITE);
-	world->Init(window_height);
+
+	world->Init(window_width, window_height);
 }
 
 // Render one frame
@@ -47,20 +46,21 @@ void Application::Render(void)
 {
 	// ...
 	if (MODE == PARTICLE) {
-		world->Render(framebuffer);
-		world->Update(framebuffer.height);
+		world->c = global_col;
+		world->Render(&framebuffer);
+		world->Update(framebuffer.width, framebuffer.height);
 	}
 	framebuffer.Render();
 	if (MODE != PARTICLE) {
-		framebuffer.DrawImagePixels(toolbar, 0, 0, true);
 		for (int i = 0; i <= 50; i++) for (int j = 0; j < framebuffer.width; j++) framebuffer.SetPixelSafe(j, framebuffer.height - i, Color(51));
+		framebuffer.DrawImagePixels(toolbar, 0, 0, true);
+
 	}
 }
 
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-	world->Update(window_height);
 	int w, h;
 	SDL_GetWindowSize(window, &w, &h);
 	framebuffer.Resize(w, h);
@@ -87,6 +87,8 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 	case SDLK_t: framebuffer.DrawImagePixels(toolbar, 0, 0, true); break;
 
 	case SDLK_p: MODE = PARTICLE; break;
+	
+	case SDLK_DELETE: MODE = FREEHAND; framebuffer.Fill(Color::WHITE); break;
 
 	case SDLK_s: if(framebuffer.SaveTGA("../../myDrawing.tga")) std::cout << "SAVED SUCCESSFULLY" << std::endl; break;
 

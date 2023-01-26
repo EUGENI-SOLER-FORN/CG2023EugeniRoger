@@ -8,6 +8,7 @@
 #include "main/includes.h"
 #include "framework.h"
 #include "image.h"
+#define WORLD_SIZE 200
 
 class Particle {
 	public:
@@ -23,22 +24,33 @@ class Particle {
 			vy = 0;
 			size = 1;
 		}
-		void Update(int height) {
+		void Update(int width, int height) {
 			this->y += this->vy;
 
 			if (this->y < 0) {
 				this->y = height;
+				this->x = std::rand() % width;
 			}
+		}
+		void Init(int width, int height) {
+			this->x = std::rand() % width;
+			this->y = std::rand() % (height*2);
+
+			this->vx = 0;
+			this->vy = -3 - (std::rand() % 10);
+
+			this->size = (std::rand()%8) + 2;
 		}
 };
 
 class World
 {
 public:
-	Particle p[100];
+	int size;
+	Particle** p;
 	Color c;
 	World(Color col);
-	void Init(int height);
-	void Render(Image buff);
-	void Update(int height);
+	void Init(int width, int height);
+	void Render(Image* buff);
+	void Update(int width, int height);
 };
