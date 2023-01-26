@@ -282,7 +282,7 @@ bool Image::SaveTGA(const char* filename)
 
 	unsigned short header_short[3];
 	header_short[0] = width;
-	header_short[1] = height;
+	header_short[1] = height - 50;
 	unsigned char* header = (unsigned char*)header_short;
 	header[4] = 24;
 	header[5] = 0;

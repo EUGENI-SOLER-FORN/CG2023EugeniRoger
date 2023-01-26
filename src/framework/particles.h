@@ -1,3 +1,6 @@
+
+#pragma once
+
 #include "application.h"
 #include "utils.h"
 #include "camera.h"
@@ -6,23 +9,36 @@
 #include "framework.h"
 #include "image.h"
 
-class Particles 
-{
+class Particle {
 	public:
+		int x;
+		int y;
+		float vx;
+		float vy;
+		int size;
+		Particle() {
+			x = 0;
+			y = 0;
+			vx = 0;
+			vy = 0;
+			size = 1;
+		}
+		void Update(int height) {
+			this->y += this->vy;
 
-		typedef struct {
-			int x;
-			int y;
-			float vx;
-			float vy;
-			int size;
-		}Particle;
+			if (this->y < 0) {
+				this->y = height;
+			}
+		}
+};
 
-
-		Particle p[100];
-		Color c;
-		Particles(Color col);
-		void Init(int height);
-		void Render(Image buff);
-		void Update(int height);
+class World
+{
+public:
+	Particle p[100];
+	Color c;
+	World(Color col);
+	void Init(int height);
+	void Render(Image buff);
+	void Update(int height);
 };

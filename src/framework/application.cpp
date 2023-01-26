@@ -23,7 +23,7 @@ Application::Application(const char* caption, int width, int height)
 	this->framebuffer.Fill(Color::WHITE);
 	this->DRAWING = false;
 	this->MODE = FREEHAND;
-	this->world = new Particles(global_col);
+	this->world = new World(global_col);
 
 }
 
@@ -36,9 +36,9 @@ Application::~Application()
 
 void Application::Init(void)
 {
-	if (!toolbar.LoadTGA("res/images/toolbar.tga")) std::cout << "Toolbar not found" << std::endl;;
+	if (!toolbar.LoadPNG("images/toolbar.png")) std::cout << "Toolbar not found" << std::endl;;
 	std::cout << "Initiating app..." << std::endl;
-	world = new Particles(Color::WHITE);
+	world = new World(Color::WHITE);
 	world->Init(window_height);
 }
 
@@ -47,15 +47,14 @@ void Application::Render(void)
 {
 	// ...
 	if (MODE == PARTICLE) {
-		
-		
 		world->Render(framebuffer);
-		
-			
+		world->Update(framebuffer.height);
 	}
 	framebuffer.Render();
-	for (int i = 0; i <= 50; i++) for (int j = 0; j < framebuffer.width; j++) framebuffer.SetPixelSafe(j, framebuffer.height - i, Color(51));
-	framebuffer.DrawImagePixels(toolbar, 0, 0, true);
+	if (MODE != PARTICLE) {
+		framebuffer.DrawImagePixels(toolbar, 0, 0, true);
+		for (int i = 0; i <= 50; i++) for (int j = 0; j < framebuffer.width; j++) framebuffer.SetPixelSafe(j, framebuffer.height - i, Color(51));
+	}
 }
 
 // Called after render

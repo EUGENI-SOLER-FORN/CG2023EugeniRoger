@@ -7,11 +7,11 @@
 #include "image.h"
 #include "particles.h"
 
-Particles::Particles(Color col) {
+World::World(Color col) {
 	c = col;
 }
 
-void Particles::Init(int height) {
+void World::Init(int height) {
 
 
 	for (int i = 0; i < 100; i++) {
@@ -23,21 +23,15 @@ void Particles::Init(int height) {
 	}
 }
 
-void Particles::Render(Image buff) {
+void World::Render(Image buff) {
 	buff.Fill(Color::BLACK);
 	for (int i = 0; i < 100; i++) {
 		buff.DrawCircle(p[i].x, p[i].y, p[i].size, Color::WHITE, true);
 	}
 }
 
-void Particles::Update(int height) {
+void World::Update(int height) {
 	for (int i = 0; i < 100; i++) {
-		//p[i].x += p[i].vx;
-		p[i].y += p[i].vy;
-
-		if (p[i].y < 0) {
-			p[i].y = height;
-			
-		}
+		p[i].Update(height);
 	}
 }
