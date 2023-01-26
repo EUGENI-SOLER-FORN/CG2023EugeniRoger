@@ -74,13 +74,13 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 	switch (event.keysym.sym) {
 	case SDLK_l: MODE = LINE; break;
 
-	case SDLK_c: MODE = CIRCLE; break;
+	case SDLK_e: MODE = CIRCLE; break;
 
-	case SDLK_d: MODE = FREEHAND; break;
+	case SDLK_f: MODE = FREEHAND; break;
 
-	case SDLK_f: MODE = FILL_CIRCLE; break;
+	case SDLK_c: MODE = FILL_CIRCLE; break;
 
-		// Backspace fills the canvas with white (erase)
+	// Backspace fills the canvas with white (erase)
 	case SDLK_BACKSPACE: framebuffer.Fill(Color::WHITE); break;
 	case SDLK_n: framebuffer.Fill(Color::WHITE); break;
 
