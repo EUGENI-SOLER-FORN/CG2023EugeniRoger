@@ -29,6 +29,7 @@ Application::Application(const char* caption, int width, int height)
 
 Application::~Application()
 {
+	delete world;
 	delete keystate;
 }
 
@@ -54,7 +55,6 @@ void Application::Render(void)
 	if (MODE != PARTICLE) {
 		for (int i = 0; i <= 50; i++) for (int j = 0; j < framebuffer.width; j++) framebuffer.SetPixelSafe(j, framebuffer.height - i, Color(51));
 		framebuffer.DrawImagePixels(toolbar, 0, 0, true);
-
 	}
 }
 
