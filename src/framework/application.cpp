@@ -1,7 +1,8 @@
 #include "application.h"
 #include "mesh.h"
 #include "shader.h"
-#include "utils.h" 
+#include "utils.h"
+#include "entity.h" 
 
 Application::Application(const char* caption, int width, int height)
 {
@@ -17,163 +18,67 @@ Application::Application(const char* caption, int width, int height)
 	this->keystate = SDL_GetKeyboardState(nullptr);
 
 	this->framebuffer.Resize(w, h);
-
-	this->LastClick = Vector2(mouse_position.x, mouse_position.y);
-	this->global_col = Color::BLACK;
-	this->framebuffer.Fill(Color::WHITE);
-	this->DRAWING = false;
-	this->MODE = FREEHAND;
+	this->camera = new Camera();
+	this->camera.UpdateViewMatrix();
+	this->camera.UpdateProjectionMatrix();
 }
-
-
 
 Application::~Application()
 {
-	delete world;
-	delete keystate;
+	SDL_DestroyWindow(window);
 }
 
 void Application::Init(void)
 {
-	if (!toolbar.LoadPNG("images/toolbarFunctionsAdded.png")) std::cout << "Toolbar not found" << std::endl;;
+	Mesh* m = new Mesh();
+	m->LoadOBJ("meshes/lee.obj");
+	e = new Entity(m);
 	std::cout << "Initiating app..." << std::endl;
-	world = new World(Color::WHITE);
-
-	world->Init(window_width, window_height);
+	std::cout << "Initiating..." << std::endl;
 }
 
 // Render one frame
 void Application::Render(void)
 {
 	// ...
-	if (MODE == PARTICLE) {
-		world->c = global_col;
-		world->Render(&framebuffer);
-		world->Update(framebuffer.width, framebuffer.height);
-	}
+	
+	e->Render(&framebuffer, &camera, Color::WHITE);
+	
 	framebuffer.Render();
-	if (MODE != PARTICLE) {
-		for (int i = 0; i <= 50; i++) for (int j = 0; j < framebuffer.width; j++) framebuffer.SetPixelSafe(j, framebuffer.height - i, Color(51));
-		framebuffer.DrawImagePixels(toolbar, 0, 0, true);
-	}
 }
 
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-	int w, h;
-	SDL_GetWindowSize(window, &w, &h);
-	framebuffer.Resize(w, h);
+
 }
 
 //keyboard press event 
 void Application::OnKeyPressed( SDL_KeyboardEvent event )
 {
-	int r;
 	// KEY CODES: https://wiki.libsdl.org/SDL2/SDL_Keycode
-	switch (event.keysym.sym) {
-	case SDLK_l: MODE = LINE; break;
-
-	case SDLK_e: MODE = CIRCLE; break;
-
-	case SDLK_f: MODE = FREEHAND; break;
-
-	case SDLK_c: MODE = FILL_CIRCLE; break;
-
-	// Backspace fills the canvas with white (erase)
-	case SDLK_BACKSPACE: framebuffer.Fill(Color::WHITE); break;
-	case SDLK_n: framebuffer.Fill(Color::WHITE); break;
-
-	case SDLK_t: framebuffer.DrawImagePixels(toolbar, 0, 0, true); break;
-
-	case SDLK_p: MODE = PARTICLE; break;
-	
-	case SDLK_DELETE: MODE = FREEHAND; framebuffer.Fill(Color::WHITE); break;
-
-	case SDLK_s: if(framebuffer.SaveTGA("../../myDrawing.tga")) std::cout << "SAVED SUCCESSFULLY" << std::endl; break;
-
-	case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
-
+	switch(event.keysym.sym) {
+		case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
 	}
 }
 
 void Application::OnMouseButtonDown( SDL_MouseButtonEvent event )
 {
-	bool onToolbar = (framebuffer.height - 50) < mouse_position.y;
-
-	if (event.button == SDL_BUTTON_LEFT && !onToolbar) {
-		LastClick = mouse_position;
-		DRAWING = true;
-	}
-	else if (event.button == SDL_BUTTON_LEFT && onToolbar) {
-		int i = 0;
-		// "NEW" Button
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) framebuffer.Fill(Color::WHITE);
-
-		i++;
-		// "SAVE" Button
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50 && framebuffer.SaveTGA("../../myDrawing.tga")) std::cout << "SAVED SUCCESSFULLY" << std::endl;
-
-		i++;
-		// COLOR Buttons
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::BLACK; }
-		i++;
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::RED; }
-		i++;
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::GREEN; }
-		i++;
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::BLUE; }
-		i++;
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::YELLOW; }
-		i++;
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::PURPLE; }
-		i++;
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::CYAN; }
-		i++;
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { global_col = Color::WHITE; }
-		i += 2;
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { MODE = FREEHAND; }
-		i++;
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { MODE = LINE; }
-		i++;
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { MODE = CIRCLE; }
-		i++;
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { MODE = FILL_CIRCLE; }
-		i++;
-		if (i * 50 < mouse_position.x && mouse_position.x < (i + 1) * 50) { MODE = PARTICLE;
-		}
+	if (event.button == SDL_BUTTON_LEFT) {
 
 	}
 }
 
 void Application::OnMouseButtonUp( SDL_MouseButtonEvent event )
 {
-	int r = (int)sqrt((mouse_position.x - LastClick.x) * (mouse_position.x - LastClick.x) + (mouse_position.y - LastClick.y) * (mouse_position.y - LastClick.y));
-	bool onToolbar = mouse_position.x;
-	if (event.button == SDL_BUTTON_LEFT && DRAWING) {
-		switch (MODE) {
-		case CIRCLE:
-			framebuffer.DrawCircle(LastClick.x, LastClick.y, r, global_col, false);
-			break;
-		case FILL_CIRCLE:
-			framebuffer.DrawCircle(LastClick.x, LastClick.y, r, global_col, true);
-			break;
-		case LINE:
-			framebuffer.DrawLineBresenham(LastClick.x, LastClick.y, mouse_position.x, mouse_position.y, global_col);
-			break;		
-		default:
-			break;
-		}
-		DRAWING = false;
+	if (event.button == SDL_BUTTON_LEFT) {
+
 	}
 }
 
 void Application::OnMouseMove(SDL_MouseButtonEvent event)
 {
-	if (DRAWING && MODE == FREEHAND) {
-		framebuffer.DrawLineBresenham(LastClick.x, LastClick.y, mouse_position.x, mouse_position.y, global_col);
-		LastClick = mouse_position;
-	}
+	
 }
 
 void Application::OnFileChanged(const char* filename)

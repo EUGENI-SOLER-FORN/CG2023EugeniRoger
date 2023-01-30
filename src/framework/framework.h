@@ -33,7 +33,6 @@ public:
 	};
 	Color() { r = g = b = 0; }
 	Color(float r, float g, float b) { this->r = (unsigned char)r; this->g = (unsigned char)g; this->b = (unsigned char)b; }
-	Color(float gr) { this->r = (unsigned char)gr; this->g = (unsigned char)gr; this->b = (unsigned char)gr; }
 	void operator = (const Vector3& v);
 
 	void Set(float r, float g, float b) { this->r = (unsigned char)clamp(r,0.0,255.0); this->g = (unsigned char)clamp(g,0.0,255.0); this->b = (unsigned char)clamp(b,0.0,255.0); }

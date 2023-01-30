@@ -273,7 +273,8 @@ bool Image::SaveTGA(const char* filename)
 {
 	unsigned char TGAheader[12] = {0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-	FILE *file = fopen(filename, "wb");
+	std::string fullPath = absResPath(filename);
+	FILE *file = fopen(fullPath.c_str(), "wb");
 	if ( file == NULL )
 	{
 		perror("Failed to open file: ");
@@ -282,7 +283,7 @@ bool Image::SaveTGA(const char* filename)
 
 	unsigned short header_short[3];
 	header_short[0] = width;
-	header_short[1] = height - 50;
+	header_short[1] = height;
 	unsigned char* header = (unsigned char*)header_short;
 	header[4] = 24;
 	header[5] = 0;
@@ -295,7 +296,7 @@ bool Image::SaveTGA(const char* filename)
 	for(unsigned int y = 0; y < height; ++y)
 		for(unsigned int x = 0; x < width; ++x)
 		{
-			Color c = pixels[(height-y-1)*width+x];
+			Color c = pixels[y*width+x];
 			unsigned int pos = (y*width+x)*3;
 			bytes[pos+2] = c.r;
 			bytes[pos+1] = c.g;
@@ -304,7 +305,21 @@ bool Image::SaveTGA(const char* filename)
 
 	fwrite(bytes, 1, width*height*3, file);
 	fclose(file);
+
 	return true;
+}
+
+void Image::DrawRect(int x, int y, int w, int h, const Color& c)
+{
+	for (int i = 0; i < w; ++i) {
+		SetPixel(x + i, y, c);
+		SetPixel(x + i, y + h, c);
+	}
+
+	for (int j = 0; j < h; ++j) {
+		SetPixel(x, y + j, c);
+		SetPixel(x + w, y + j, c);
+	}
 }
 
 #ifndef IGNORE_LAMBDAS
@@ -379,8 +394,6 @@ void FloatImage::Resize(unsigned int width, unsigned int height)
 	pixels = new_pixels;
 }
 
-
-// Draw line using DDA method
 void Image::DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c) {
 	int dx = x1 - x0;
 	int dy = y1 - y0;
@@ -404,13 +417,13 @@ void Image::DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c) {
 void Image::DrawLineBresenham(int x0, int y0, int x1, int y1, const Color& c) {
 	float  inc_E, inc_NE, dx, dy, d;
 	int  x, y, n, startX, startY, finalX, finalY;
-	
+
 	startX = x0;
 	startY = y0;
 
 	finalX = x1;
 	finalY = y1;
-	
+
 	if (x1 < x0) {
 		startX = x1;
 		startY = y1;
@@ -422,14 +435,14 @@ void Image::DrawLineBresenham(int x0, int y0, int x1, int y1, const Color& c) {
 	dx = finalX - startX;
 	dy = finalY - startY;
 
-	
-	 
+
+
 	x = startX;
 	y = startY;
 
 	float absDy = dy;
 	absDy = abs(absDy);
-	
+
 	SetPixelSafe(x, y, c);
 	if (absDy < dx) {
 		inc_E = 2 * absDy;
