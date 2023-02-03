@@ -18,7 +18,8 @@ Application::Application(const char* caption, int width, int height)
 	this->keystate = SDL_GetKeyboardState(nullptr);
 
 	this->framebuffer.Resize(w, h);
-	this->camera = new Camera();
+	this->camera = Camera();
+	//this->camera.SetPerspective(45, 0.5, 0.01, 200);
 	this->camera.UpdateViewMatrix();
 	this->camera.UpdateProjectionMatrix();
 }
@@ -32,8 +33,11 @@ void Application::Init(void)
 {
 	Mesh* m = new Mesh();
 	m->LoadOBJ("meshes/lee.obj");
-	e = new Entity(m);
-	std::cout << "Initiating app..." << std::endl;
+	e = new Entity(m, Color::WHITE);
+	Vector3 trans = Vector3(window_width/2, window_height/2, 10);
+	Vector3 rot = Vector3(0, 0, 0);
+	Vector3 scale = Vector3(500);
+	e->SetModelMatrix(trans, rot, scale);
 	std::cout << "Initiating..." << std::endl;
 }
 
@@ -42,7 +46,7 @@ void Application::Render(void)
 {
 	// ...
 	
-	e->Render(&framebuffer, &camera, Color::WHITE);
+	e->Render(&framebuffer, &camera, e->entityColor);
 	
 	framebuffer.Render();
 }

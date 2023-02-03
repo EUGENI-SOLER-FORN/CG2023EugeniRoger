@@ -416,7 +416,7 @@ void Image::DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c) {
 // Draw line using Besenham method
 void Image::DrawLineBresenham(int x0, int y0, int x1, int y1, const Color& c) {
 	float  inc_E, inc_NE, dx, dy, d;
-	int  x, y, n, startX, startY, finalX, finalY;
+	int  x, y, startX, startY, finalX, finalY;
 
 	startX = x0;
 	startY = y0;
