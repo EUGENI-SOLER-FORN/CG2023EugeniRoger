@@ -40,6 +40,6 @@ public:
 	void SetDefaultMatrix();
 	void SetModelMatrix(Vector3 translation, Vector3 rotation, Vector3 scale, bool radians = true);
 	void DrawCloud(Image* framebuffer, Camera* camera, const Color&, std::vector<Vector3> vertices);
-	void DrawMesh(Image* framebuffer, Camera* camera, const Color& c, std::vector<Vector3> vertices);
+	void DrawWireframe(Image* framebuffer, Camera* camera, const Color& c, std::vector<Vector3> vertices);
 private:
 };

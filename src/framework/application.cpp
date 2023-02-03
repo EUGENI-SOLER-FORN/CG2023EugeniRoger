@@ -19,9 +19,12 @@ Application::Application(const char* caption, int width, int height)
 
 	this->framebuffer.Resize(w, h);
 	this->camera = Camera();
-	//this->camera.SetPerspective(45, 0.5, 0.01, 200);
-	this->camera.UpdateViewMatrix();
-	this->camera.UpdateProjectionMatrix();
+	
+	Vector3 eye = Vector3(0, 0, 0);
+	Vector3 center= Vector3(0, 0, -1);
+	Vector3 up = Vector3(0, 1, 0);
+	this->camera.LookAt(eye, center, up);
+	this->camera.SetPerspective(45 * DEG2RAD, 0.5, 0.01, 100);
 }
 
 Application::~Application()
@@ -34,9 +37,9 @@ void Application::Init(void)
 	Mesh* m = new Mesh();
 	m->LoadOBJ("meshes/lee.obj");
 	e = new Entity(m, Color::WHITE);
-	Vector3 trans = Vector3(window_width/2, window_height/2, 10);
-	Vector3 rot = Vector3(0, 0, 0);
-	Vector3 scale = Vector3(500);
+	Vector3 trans = Vector3(0, 0, -100);
+	Vector3 rot = Vector3(0);
+	Vector3 scale = Vector3(200);
 	e->SetModelMatrix(trans, rot, scale);
 	std::cout << "Initiating..." << std::endl;
 }
