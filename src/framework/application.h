@@ -27,11 +27,16 @@ public:
 	Vector2 mouse_position; // Last mouse position
 	Vector2 mouse_delta; // Mouse movement in the last frame
 
+	int MODIFY = 0;
+	bool MOVING_CAMERA = false;
+	std::vector<Entity*> scene;
+
 	void OnKeyPressed(SDL_KeyboardEvent event);
 	void OnMouseButtonDown(SDL_MouseButtonEvent event);
 	void OnMouseButtonUp(SDL_MouseButtonEvent event);
 	void OnMouseMove(SDL_MouseButtonEvent event);
 	void OnFileChanged(const char* filename);
+
 
 	// CPU Global framebuffer
 	Image framebuffer;

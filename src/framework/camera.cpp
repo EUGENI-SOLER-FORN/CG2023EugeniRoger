@@ -98,22 +98,26 @@ void Camera::UpdateViewMatrix()
 	view_matrix.M[0][0] = S.x;
 	view_matrix.M[1][0] = S.y;
 	view_matrix.M[2][0] = S.z;
+	view_matrix.M[3][0] = 0;
 
 	view_matrix.M[0][1] = T.x;
 	view_matrix.M[1][1] = T.y;
 	view_matrix.M[2][1] = T.z;
+	view_matrix.M[3][1] = 0;
 
 	view_matrix.M[0][2] = -F.x;
 	view_matrix.M[1][2] = -F.y;
 	view_matrix.M[2][2] = -F.z;
+	view_matrix.M[3][2] = 0;
 
 	view_matrix.M[3][3] = 1.0;
+	view_matrix.M[2][3] = 0;
+	view_matrix.M[1][3] = 0;
+	view_matrix.M[0][3] = 0;
 
 	// Translate view matrix
 	// ...
-	view_matrix.M[0][3] = -this->eye.Dot(S);
-	view_matrix.M[1][3] = -this->eye.Dot(T);
-	view_matrix.M[2][3] =  this->eye.Dot(F);
+	view_matrix.TranslateLocal(-eye.x, -eye.y, -eye.z);
 
 	UpdateViewProjectionMatrix();
 }
@@ -130,6 +134,7 @@ void Camera::UpdateProjectionMatrix()
 	// Remember how to fill a Matrix4x4 (check framework slides)
 	
 	if (type == PERSPECTIVE) {
+		projection_matrix.SetIdentity();
 		float f = 1 / (tan(this->fov / 2));
 		projection_matrix.M[0][0] = f/this->aspect;
 		projection_matrix.M[1][1] = f;
@@ -140,6 +145,7 @@ void Camera::UpdateProjectionMatrix()
 	}
 	else if (type == ORTHOGRAPHIC) {
 		// ...
+		projection_matrix.SetIdentity();
 		projection_matrix.M[0][0] = 2 / (this->right - this->left);
 		projection_matrix.M[1][1] = 2 / (this->top - this->bottom);
 		projection_matrix.M[2][2] = 2 / (this->far_plane - this->near_plane);
@@ -190,4 +196,3 @@ void Camera::SetExampleProjectionMatrix()
 	glGetFloatv(GL_PROJECTION_MATRIX, projection_matrix.m );
 	glMatrixMode(GL_MODELVIEW);
 }
-

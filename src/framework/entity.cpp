@@ -12,13 +12,13 @@
 
 void Entity::Render(Image* framebuffer, Camera* camera, const Color& c) {
 	std::vector<Vector3> vertices = this->entityMesh->GetVertices();
-	this->DrawCloud(framebuffer, camera, c, vertices);
+	//this->DrawCloud(framebuffer, camera, c, vertices);
 	this->DrawWireframe(framebuffer, camera, c, vertices);
 }
 
 void Entity::DrawWireframe(Image* framebuffer, Camera* camera, const Color& c, std::vector<Vector3> vertices) {
-	bool rend0, rend1, rend2;
 	for (int i = 0; i < vertices.size()-2; i += 3) {
+		bool rend0, rend1, rend2;
 		// Local to World
 		Vector3 worldVertex0 = this->modelMatrix * vertices[i];
 		Vector3 worldVertex1 = this->modelMatrix * vertices[i + 1];
@@ -35,17 +35,19 @@ void Entity::DrawWireframe(Image* framebuffer, Camera* camera, const Color& c, s
 		p1.x = (p1.x + 1) / 2 * framebuffer->width;
 		p1.y = (p1.y + 1) / 2 * framebuffer->height;
 		p2.x = (p2.x + 1) / 2 * framebuffer->width;
-		p2.y = (p2.y + 1) /2 * framebuffer->height;
+		p2.y = (p2.y + 1) / 2 * framebuffer->height;
 
-		if (!(rend0 || rend1)) framebuffer->DrawLineBresenham(floor(p0.x), floor(p0.y), floor(p1.x), floor(p1.y), c);
-		if (!(rend1 || rend2)) framebuffer->DrawLineBresenham(floor(p1.x), floor(p1.y), floor(p2.x), floor(p2.y), c);
-		if (!(rend2 || rend0)) framebuffer->DrawLineBresenham(floor(p2.x), floor(p2.y), floor(p0.x), floor(p0.y), c);
+		if (!(rend0 || rend1 || rend2)) {
+			framebuffer->DrawLineBresenham(floor(p0.x), floor(p0.y), floor(p1.x), floor(p1.y), c);
+			framebuffer->DrawLineBresenham(floor(p1.x), floor(p1.y), floor(p2.x), floor(p2.y), c);
+			framebuffer->DrawLineBresenham(floor(p2.x), floor(p2.y), floor(p0.x), floor(p0.y), c);
+		}
 	}
 }
 
 void Entity::DrawCloud(Image* framebuffer, Camera* camera, const Color& c, std::vector<Vector3> vertices) {
-	bool rend0;
 	for (int i = 0; i < vertices.size(); i++) {
+		bool rend0;
 		// Local to World
 		Vector3 worldVertex0 = this->modelMatrix * vertices[i];
 		// World to Clip
@@ -54,29 +56,54 @@ void Entity::DrawCloud(Image* framebuffer, Camera* camera, const Color& c, std::
 		p0.x = (p0.x + 1) / 2 * framebuffer->width;
 		p0.y = (p0.y + 1) / 2 * framebuffer->height;
 
-		if (!rend0) framebuffer->SetPixelSafe(floor(p0.x), floor(p0.y), Color::RED);
+		if (!rend0) framebuffer->SetPixelSafe(floor(p0.x), floor(p0.y), c);
 	}
 }
 
 void Entity::SetDefaultMatrix(){
-	this->modelMatrix = Matrix44();
+	this->RotationMatrix.SetIdentity();
+	this->TranslationMatrix.SetIdentity();
+	this->ScaleMatrix.SetIdentity();
+	this->modelMatrix.SetIdentity();
 }
 
 void Entity::SetModelMatrix(Vector3 translation, Vector3 rotation, Vector3 scale, bool radians) {
-	Matrix44 TranslationMatrix = Matrix44();
-	Matrix44 RotationMatrix = Matrix44();
-	Matrix44 ScaleMatrix = Matrix44();
-	
-	TranslationMatrix.SetTranslation(translation.x, translation.y, translation.z);
-	
 	if (!radians) rotation = rotation * DEG2RAD;
-		
-	RotationMatrix.SetRotation(rotation.x, rotation);
-	
-	ScaleMatrix.SetIdentity();
-	ScaleMatrix.m[0] = scale.x;
-	ScaleMatrix.m[5] = scale.y;
-	ScaleMatrix.m[10] = scale.z;
+	this->Translate(translation.x, translation.y, translation.z);
+	this->Rotate(rotation.x, rotation.y, rotation.z);
+	this->Scale(scale.x, scale.y, scale.z);
+}
 
-	this->modelMatrix = ScaleMatrix * RotationMatrix * TranslationMatrix;
+void Entity::Rotate(float angleX, float angleY, float angleZ) {
+	float cX = cos(angleX);
+	float cY = cos(angleY);
+	float cZ = cos(angleZ);
+	float sX = sin(angleX);
+	float sY = sin(angleY);
+	float sZ = sin(angleZ);
+
+	RotationMatrix.m[0] = cX*cY;
+	RotationMatrix.m[1] = cX*sY*sZ - sX*cZ;
+	RotationMatrix.m[2] = cX*sY*cZ - sX*sZ;
+	
+	RotationMatrix.m[4] = sX*cY;
+	RotationMatrix.m[5] = sX*sY*sZ + cX*cZ;
+	RotationMatrix.m[6] = sX*sY*cZ - cX*sZ;
+	
+	RotationMatrix.m[8] = -sY;
+	RotationMatrix.m[9] = cY*sZ;
+	RotationMatrix.m[10] = cY*cZ;
+
+	this->updateModel();
+}
+
+void Entity::Scale(float scaleX, float scaleY, float scaleZ) {
+	ScaleMatrix.m[0]  = scaleX;
+	ScaleMatrix.m[5]  = scaleY;
+	ScaleMatrix.m[10] = scaleZ;
+	this->updateModel();
+}
+
+void Entity::Translate(float dX, float dY, float dZ) {
+	this->modelMatrix.TranslateLocal(dX, dY, dZ);
 }
