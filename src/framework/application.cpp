@@ -37,6 +37,7 @@ Application::Application(const char* caption, int width, int height)
 	scene.push_back(new Entity(m, Color::RED));
 	scene.push_back(new Entity(m, Color::GREEN));
 	scene.push_back(new Entity(m, Color::BLUE));
+	this->MODIFY = ZOOM;
 }
 
 Application::~Application()
@@ -46,6 +47,7 @@ Application::~Application()
 
 void Application::Init(void)
 {
+
 	Vector3 trans = Vector3(40, 0, 70);
 	Vector3 rot = Vector3(0, 0, 30 * DEG2RAD);
 	Vector3 scale = Vector3(30);
@@ -84,7 +86,7 @@ void Application::Update(float seconds_elapsed)
 	
 	scene[0]->Rotate(time, 0, 0);
 	scene[1]->Scale(50 * (c*c + 0.5), 50, 50);
-	scene[2]->Translate((std::rand()%3-1)/100, (std::rand() % 3 - 1) / 100, (std::rand() % 3 - 1) / 100);
+	scene[2]->Translate((std::rand()%3-1)/20.0, (std::rand() % 3 - 1) / 20.0, 0);
 }
 
 //keyboard press event 
@@ -99,8 +101,8 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 	switch(event.keysym.sym) {
 		case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
 		// Change perspective mode
-		case SDLK_p: this->camera.SetPerspective(4*alpha, 0.5, 0.01, 100); break; 
-		case SDLK_o: this->camera.SetOrthographic(-100, 100, 100, -100, -100, 100); break;
+		case SDLK_p: this->camera.SetPerspective(4*alpha, 0.5, this->camera.near_plane, this->camera.near_plane); break;
+		case SDLK_o: this->camera.SetOrthographic(-100, 100, 100, -100, this->camera.near_plane, this->camera.near_plane); break;
 		
 		// Zoom in/out
 		case SDLK_PAGEUP: 
@@ -109,10 +111,10 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 					this->camera.eye = this->camera.eye - direction * 0.1;
 					break;
 				case NEAR:
-					this->camera.near_plane+=5;
+					if(this->camera.far_plane > this->camera.near_plane + 1) this->camera.near_plane++;
 					break;
 				case FAR:
-					this->camera.far_plane+=5;
+					this->camera.far_plane++;
 					break;
 				case FOV:
 					this->camera.fov += alpha;
@@ -129,10 +131,10 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 				this->camera.eye = this->camera.eye + direction * 0.1;
 				break;
 			case NEAR:
-				this->camera.near_plane-=5;
+				this->camera.near_plane--;
 				break;
 			case FAR:
-				this->camera.far_plane-=5;
+				if (this->camera.far_plane-1 > this->camera.near_plane) this->camera.far_plane--;
 				break;
 			case FOV:
 				this->camera.fov -= alpha;
