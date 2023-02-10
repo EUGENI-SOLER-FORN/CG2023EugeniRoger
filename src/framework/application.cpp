@@ -29,6 +29,7 @@ Application::Application(const char* caption, int width, int height)
 	this->keystate = SDL_GetKeyboardState(nullptr);
 
 	this->framebuffer.Resize(w, h);
+	this->zBuffer.Resize(w, h);
 	this->camera = Camera();
 	
 	Vector3 eye = Vector3(0, 0, -50);
@@ -41,8 +42,7 @@ Application::Application(const char* caption, int width, int height)
 	Mesh* m = new Mesh();
 	m->LoadOBJ("meshes/lee.obj");
 	scene.push_back(new Entity(m, Color::RED));
-	scene.push_back(new Entity(m, Color::GREEN));
-	scene.push_back(new Entity(m, Color::BLUE));
+
 	this->ATTRIBUTE = ZOOM;
 	this->MODIFY = ORBIT;
 }
@@ -54,20 +54,10 @@ Application::~Application()
 
 void Application::Init(void)
 {
-	Vector3 trans = Vector3(40, 0, 70);
+	Vector3 trans = Vector3(20, 0, 30);
 	Vector3 rot = Vector3(0, 0, 30 * DEG2RAD);
 	Vector3 scale = Vector3(30);
 	scene[0]->SetModelMatrix(trans, rot, scale);
-
-	trans = Vector3(0, 0, 30);
-	rot = Vector3(0, 0, 30 * DEG2RAD);
-	scale = Vector3(50);
-	scene[1]->SetModelMatrix(trans, rot, scale);
-
-	trans = Vector3(0, 0, 50);
-	rot = Vector3(0);
-	scale = Vector3(50);
-	scene[2]->SetModelMatrix(trans, rot, scale);
 
 	std::cout << "Initiating..." << std::endl;
 }
@@ -78,9 +68,7 @@ void Application::Render(void)
 	// ...
 	framebuffer.Fill(Color::BLACK);
 
-	scene[0]->Render(&framebuffer, &camera, scene[0]->entityColor);
-	scene[1]->Render(&framebuffer, &camera, scene[1]->entityColor);
-	scene[2]->Render(&framebuffer, &camera, scene[2]->entityColor);
+	scene[0]->Render(&framebuffer, &camera, &zBuffer);
 
 	framebuffer.Render();
 }
@@ -88,11 +76,8 @@ void Application::Render(void)
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-	float c = cos(time);
-	
-	scene[0]->Rotate(time, 0, 0);
-	scene[1]->Scale(50 * (c*c + 0.5), 50, 50);
-	scene[2]->Translate((std::rand()%3-1)/20.0, (std::rand() % 3 - 1) / 20.0, 0);
+
+
 }
 
 //keyboard press event 
@@ -238,6 +223,13 @@ void Application::OnMouseMove(SDL_MouseButtonEvent event)
 		}
 		camera.LookAt(camera.eye, camera.center, camera.up);
 	}
+}
+
+void Application::OnWheel(SDL_MouseWheelEvent event)
+{
+	float dy = event.preciseY;
+
+	// ...
 }
 
 void Application::OnFileChanged(const char* filename)

@@ -10,13 +10,13 @@
 
 #include "entity.h"
 
-void Entity::Render(Image* framebuffer, Camera* camera, const Color& c) {
+void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer) {
 	std::vector<Vector3> vertices = this->entityMesh->GetVertices();
-	//this->DrawCloud(framebuffer, camera, c, vertices);
-	this->DrawWireframe(framebuffer, camera, c, vertices);
+	if(MODE == eRenderMode::POINTCLOUD) this->DrawCloud(framebuffer, camera, zBuffer, vertices);
+	if(MODE == eRenderMode::WIREFRAME) this->DrawWireframe(framebuffer, camera, zBuffer, vertices);
 }
 
-void Entity::DrawWireframe(Image* framebuffer, Camera* camera, const Color& c, std::vector<Vector3> vertices) {
+void Entity::DrawWireframe(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices) {
 	for (int i = 0; i < vertices.size()-2; i += 3) {
 		bool rend0, rend1, rend2;
 		// Local to World
@@ -38,14 +38,14 @@ void Entity::DrawWireframe(Image* framebuffer, Camera* camera, const Color& c, s
 		p2.y = (p2.y + 1) / 2.0 * framebuffer->height;
 
 		if (!(rend0 || rend1 || rend2)) {
-			framebuffer->DrawLineBresenham(floor(p0.x), floor(p0.y), floor(p1.x), floor(p1.y), c);
-			framebuffer->DrawLineBresenham(floor(p1.x), floor(p1.y), floor(p2.x), floor(p2.y), c);
-			framebuffer->DrawLineBresenham(floor(p2.x), floor(p2.y), floor(p0.x), floor(p0.y), c);
+			framebuffer->DrawLineBresenham(floor(p0.x), floor(p0.y), floor(p1.x), floor(p1.y), this->entityColor);
+			framebuffer->DrawLineBresenham(floor(p1.x), floor(p1.y), floor(p2.x), floor(p2.y), this->entityColor);
+			framebuffer->DrawLineBresenham(floor(p2.x), floor(p2.y), floor(p0.x), floor(p0.y), this->entityColor);
 		}
 	}
 }
 
-void Entity::DrawCloud(Image* framebuffer, Camera* camera, const Color& c, std::vector<Vector3> vertices) {
+void Entity::DrawCloud(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices) {
 	for (int i = 0; i < vertices.size(); i++) {
 		bool rend0;
 		// Local to World
@@ -56,7 +56,7 @@ void Entity::DrawCloud(Image* framebuffer, Camera* camera, const Color& c, std::
 		p0.x = (p0.x + 1) / 2.0 * framebuffer->width;
 		p0.y = (p0.y + 1) / 2.0 * framebuffer->height;
 
-		if (!rend0) framebuffer->SetPixelSafe(floor(p0.x), floor(p0.y), c);
+		if (!rend0) framebuffer->SetPixelSafe(floor(p0.x), floor(p0.y), this->entityColor);
 	}
 }
 

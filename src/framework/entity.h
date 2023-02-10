@@ -14,6 +14,14 @@
 class Entity
 {
 public:
+	enum class eRenderMode {
+		POINTCLOUD,
+		WIREFRAME,
+		TRIANGLES,
+		TRIANGLES_INTERPOLATED
+	};
+	eRenderMode MODE = eRenderMode::POINTCLOUD;
+	
 	Mesh* entityMesh;
 	Matrix44 RotationMatrix;
 	Matrix44 ScaleMatrix;
@@ -25,20 +33,23 @@ public:
 		this->entityMesh = eM;
 		this->entityColor = c;
 		this->modelMatrix = mM;
+		this->MODE = eRenderMode::WIREFRAME;
 	}
 	Entity(Mesh* eM, Color c) {
 		this->entityColor = c;
 		this->entityMesh = eM;
 		this->SetDefaultMatrix();
+		this->MODE = eRenderMode::WIREFRAME;
 	}
 	Entity(Color c){
 		this->entityColor = c;
+		this->MODE = eRenderMode::WIREFRAME;
 		this->SetDefaultMatrix();
 	}
 	~Entity() { delete entityMesh; }
 
 	void setMesh(Mesh* m) { entityMesh = m; }
-	void Render(Image* framebuffer, Camera* camera, const Color& c);
+	void Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer);
 
 	void SetDefaultMatrix();
 	void SetModelMatrix(Vector3 translation, Vector3 rotation, Vector3 scale, bool radians = true);
@@ -48,8 +59,8 @@ public:
 	void Translate(float dX, float dY, float dZ);
 	void Scale(float scaleX, float scaley, float scaleZ);
 	
-	void DrawCloud(Image* framebuffer, Camera* camera, const Color&, std::vector<Vector3> vertices);
-	void DrawWireframe(Image* framebuffer, Camera* camera, const Color& c, std::vector<Vector3> vertices);
+	void DrawCloud(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices);
+	void DrawWireframe(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices);
 
 	void Update(float seconds_elapsed);
 private:

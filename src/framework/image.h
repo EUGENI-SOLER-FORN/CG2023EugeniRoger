@@ -19,7 +19,10 @@
 class FloatImage;
 class Entity;
 class Camera;
-
+typedef struct cell {
+	int minX;
+	int maxX;
+}cell;
 // A matrix of pixels
 class Image
 {
@@ -93,6 +96,8 @@ public:
 	// Draws the toolbar at location
 	void DrawImagePixels(const Image& image, int x, int y, bool top);
 
+	void DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& color);
+	void ScanLineBresenham(int x0, int y0, int x1, int y1, std::vector<cell>& table);
 
 	// Used to easy code
 	#ifndef IGNORE_LAMBDAS
