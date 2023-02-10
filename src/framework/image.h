@@ -19,9 +19,11 @@
 class FloatImage;
 class Entity;
 class Camera;
+#define ATE std::vector<cell>
 typedef struct cell {
 	int minX;
 	int maxX;
+	void InstertCandidate(int candidateX);
 }cell;
 // A matrix of pixels
 class Image
@@ -35,6 +37,7 @@ class Image
 	} TGAInfo;
 
 public:
+	ATE table;
 	unsigned int width;
 	unsigned int height;
 	unsigned int bytes_per_pixel = 3; // Bits per pixel
@@ -97,7 +100,7 @@ public:
 	void DrawImagePixels(const Image& image, int x, int y, bool top);
 
 	void DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& color);
-	void ScanLineBresenham(int x0, int y0, int x1, int y1, std::vector<cell>& table);
+	void ScanLineBresenham(int x0, int y0, int x1, int y1, ATE& table);
 
 	// Used to easy code
 	#ifndef IGNORE_LAMBDAS

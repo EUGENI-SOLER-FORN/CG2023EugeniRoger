@@ -32,7 +32,7 @@ Application::Application(const char* caption, int width, int height)
 	this->zBuffer.Resize(w, h);
 	this->camera = Camera();
 	
-	Vector3 eye = Vector3(0, 0, -50);
+	Vector3 eye = Vector3(0, 0, -30);
 	Vector3 center= Vector3(0, 0, 0);
 	Vector3 up = Vector3(0, 1, 0);
 	this->camera.LookAt(eye, center, up);
@@ -54,8 +54,8 @@ Application::~Application()
 
 void Application::Init(void)
 {
-	Vector3 trans = Vector3(20, 0, 30);
-	Vector3 rot = Vector3(0, 0, 30 * DEG2RAD);
+	Vector3 trans = Vector3(0, 10, 30);
+	Vector3 rot = Vector3(0);
 	Vector3 scale = Vector3(30);
 	scene[0]->SetModelMatrix(trans, rot, scale);
 

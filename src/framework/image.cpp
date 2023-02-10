@@ -435,8 +435,6 @@ void Image::DrawLineBresenham(int x0, int y0, int x1, int y1, const Color& c) {
 	dx = finalX - startX;
 	dy = finalY - startY;
 
-
-
 	x = startX;
 	y = startY;
 
@@ -542,5 +540,90 @@ void Image::DrawImagePixels(const Image& image, int x, int y, bool top) {
 			Color c0 = image.GetPixel(x0, y0);
 			SetPixelSafe(x0, startY + y0, c0);
 		}
+	}
+}
+
+
+void Image::ScanLineBresenham(int x0, int y0, int x1, int y1, std::vector<cell>& table) {
+	float  inc_E, inc_NE, dx, dy, d;
+	int  x, y, startX, startY, finalX, finalY;
+
+	startX = x0;
+	startY = y0;
+
+	finalX = x1;
+	finalY = y1;
+
+	if (x1 < x0) {
+		startX = x1;
+		startY = y1;
+
+		finalX = x0;
+		finalY = y0;
+	}
+
+	dx = finalX - startX;
+	dy = finalY - startY;
+
+	x = startX;
+	y = startY;
+
+	float absDy = dy;
+	absDy = abs(absDy);
+
+	table[y].InstertCandidate(x);
+	if (absDy < dx) {
+		inc_E = 2 * absDy;
+		inc_NE = 2 * (absDy - dx);
+		d = 2 * absDy - dx;
+		while (x < finalX) {
+			if (d <= 0) {
+				d = d + inc_E;
+				x++;
+			}
+			else {
+				d = d + inc_NE;
+				x++;
+				if (dy < 0) { y--; }
+				else { y++; }
+			}
+			table[y].InstertCandidate(x);
+		}
+	}
+	else {
+		inc_E = 2 * dx;
+		inc_NE = 2 * (dx - absDy);
+		d = 2 * dx - absDy;
+
+		while (y != finalY) {
+			if (0 < d) {
+				d = d - inc_E;
+				if (dy < 0) { y--; }
+				else { y++; }
+			}
+			else {
+				d = d - inc_NE;
+				x++;
+				if (dy < 0) { y--; }
+				else { y++; }
+			}
+			table[y].InstertCandidate(x);
+		}
+	}
+}
+void cell::InstertCandidate(int candidateX) {
+	this->maxX = std::max(candidateX, maxX);
+	this->minX = std::min(candidateX, minX);
+}
+
+
+void Image::DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& color) {
+	this->table.clear();
+	for (int i = 0; i < this->height; i++) table.push_back({ INT_MIN, INT_MAX });
+	ScanLineBresenham(p0.x, p0.y, p1.x, p1.y, table);
+	ScanLineBresenham(p0.x, p0.y, p1.x, p1.y, table);
+	ScanLineBresenham(p0.x, p0.y, p1.x, p1.y, table);
+	for (int i = 0; i < this->height; i++) {
+		for (int j = table[i].minX; i <= table[i].maxX; j++) this->SetPixelSafe(j, i, color);
 	}
 }
