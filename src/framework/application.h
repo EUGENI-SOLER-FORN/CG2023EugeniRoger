@@ -27,7 +27,9 @@ public:
 	Vector2 mouse_position; // Last mouse position
 	Vector2 mouse_delta; // Mouse movement in the last frame
 
-	int MODIFY = 0;
+	int ATTRIBUTE = 0;
+	bool MODIFY = false;
+
 	bool MOVING_CAMERA = false;
 	std::vector<Entity*> scene;
 

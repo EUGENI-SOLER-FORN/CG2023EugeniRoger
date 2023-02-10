@@ -50,5 +50,7 @@ public:
 	
 	void DrawCloud(Image* framebuffer, Camera* camera, const Color&, std::vector<Vector3> vertices);
 	void DrawWireframe(Image* framebuffer, Camera* camera, const Color& c, std::vector<Vector3> vertices);
+
+	void Update(float seconds_elapsed);
 private:
 };

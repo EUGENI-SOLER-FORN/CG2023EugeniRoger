@@ -4,10 +4,16 @@
 #include "utils.h"
 #include "entity.h" 
 
+#define ZOOM 0
 #define NEAR 1
 #define FAR 2
 #define FOV 3
-#define ZOOM 4
+
+#define ORBIT false
+#define CENTER true
+
+#define CLOUD false
+#define MESH true
 
 Application::Application(const char* caption, int width, int height)
 {
@@ -37,7 +43,8 @@ Application::Application(const char* caption, int width, int height)
 	scene.push_back(new Entity(m, Color::RED));
 	scene.push_back(new Entity(m, Color::GREEN));
 	scene.push_back(new Entity(m, Color::BLUE));
-	this->MODIFY = ZOOM;
+	this->ATTRIBUTE = ZOOM;
+	this->MODIFY = ORBIT;
 }
 
 Application::~Application()
@@ -47,7 +54,6 @@ Application::~Application()
 
 void Application::Init(void)
 {
-
 	Vector3 trans = Vector3(40, 0, 70);
 	Vector3 rot = Vector3(0, 0, 30 * DEG2RAD);
 	Vector3 scale = Vector3(30);
@@ -101,12 +107,12 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 	switch(event.keysym.sym) {
 		case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
 		// Change perspective mode
-		case SDLK_p: this->camera.SetPerspective(4*alpha, 0.5, this->camera.near_plane, this->camera.near_plane); break;
-		case SDLK_o: this->camera.SetOrthographic(-100, 100, 100, -100, this->camera.near_plane, this->camera.near_plane); break;
+		case SDLK_p: this->camera.SetPerspective(4*alpha, 0.5, this->camera.near_plane, this->camera.far_plane); break;
+		case SDLK_o: this->camera.SetOrthographic(-100, 100, 100, -100, this->camera.near_plane, this->camera.far_plane); break;
 		
 		// Zoom in/out
 		case SDLK_PAGEUP: 
-			switch (MODIFY) {
+			switch (ATTRIBUTE) {
 				case ZOOM:
 					this->camera.eye = this->camera.eye - direction * 0.1;
 					break;
@@ -122,68 +128,72 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 					break;
 				default:break;
 			}
-			this->camera.UpdateProjectionMatrix();
-			this->camera.LookAt(this->camera.eye, this->camera.center, this->camera.up);
-			break;
-		case SDLK_PAGEDOWN:
-			switch (MODIFY) {
-			case ZOOM:
-				this->camera.eye = this->camera.eye + direction * 0.1;
-				break;
-			case NEAR:
-				this->camera.near_plane--;
-				break;
-			case FAR:
-				if (this->camera.far_plane-1 > this->camera.near_plane) this->camera.far_plane--;
-				break;
-			case FOV:
-				this->camera.fov -= alpha;
-				if (0 >= this->camera.fov) this->camera.fov = alpha;
-				break;
-			default:break;
-			}
-			this->camera.UpdateProjectionMatrix();
-			this->camera.LookAt(this->camera.eye, this->camera.center, this->camera.up);
 			break;
 
-		// Move center position
+		case SDLK_PAGEDOWN:
+			switch (ATTRIBUTE) {
+				case ZOOM:
+					this->camera.eye = this->camera.eye + direction * 0.1;
+					break;
+				case NEAR:
+					this->camera.near_plane--;
+					break;
+				case FAR:
+					if (this->camera.far_plane-1 > this->camera.near_plane) this->camera.far_plane--;
+					break;
+				case FOV:
+					this->camera.fov -= alpha;
+					if (0 >= this->camera.fov) this->camera.fov = alpha;
+					break;
+				default:break;
+			}
+			break;
+
+		// Move center and eye position
 		case SDLK_LEFT:
 			this->camera.center.x--;
 			this->camera.eye.x--;
-			this->camera.LookAt(this->camera.eye, this->camera.center, this->camera.up);
 			break; 
 		case SDLK_RIGHT: 
 			this->camera.center.x++;
 			this->camera.eye.x++;
-			this->camera.LookAt(this->camera.eye, this->camera.center, this->camera.up);
 			break; 
 		case SDLK_UP:
 			this->camera.center.y++;
 			this->camera.eye.y++;
-			this->camera.LookAt(this->camera.eye, this->camera.center, this->camera.up);
 			break;
 		case SDLK_DOWN:
 			this->camera.center.y--;
 			this->camera.eye.y--;
-			this->camera.LookAt(this->camera.eye, this->camera.center, this->camera.up);
 			break;
 		
+		// Change Attributes
 		case SDLK_n:
-			MODIFY = NEAR; 
+			ATTRIBUTE = NEAR;
 			break;
 		case SDLK_f:
-			MODIFY = FAR;
+			ATTRIBUTE = FAR;
 			break;
 		case SDLK_v:
-			MODIFY = FOV;
+			ATTRIBUTE = FOV;
 			break;
 		case SDLK_z:
-			MODIFY = ZOOM;
+			ATTRIBUTE = ZOOM;
 			break;
 
+		// Modify Parameters
+		case SDLK_c:
+			MODIFY = CENTER;
+			break;
+		case SDLK_r:
+			MODIFY = ORBIT;
+			break;
 	}
-	std::cout << camera.near_plane << std::endl;
-	std::cout << camera.far_plane << std::endl;
+	std::cout << "FAR: " << this->camera.far_plane << std::endl;
+	std::cout << "NEAR: "<< this->camera.near_plane <<std::endl;
+	this->camera.UpdateProjectionMatrix();
+	this->camera.LookAt(this->camera.eye, this->camera.center, this->camera.up);
+
 }
 
 void Application::OnMouseButtonDown( SDL_MouseButtonEvent event )
@@ -203,22 +213,29 @@ void Application::OnMouseButtonUp( SDL_MouseButtonEvent event )
 void Application::OnMouseMove(SDL_MouseButtonEvent event)
 {
 	if (MOVING_CAMERA) {
-		Vector3 direction = this->camera.eye - this->camera.center;
-		Vector3 rotateX = Vector3(0);
-		Vector3 rotateY = Vector3(0);
+		if (MODIFY == ORBIT) {
+			Vector3 direction = this->camera.eye - this->camera.center;
+			Vector3 rotateX = Vector3(0);
+			Vector3 rotateY = Vector3(0);
 
-		float alphaX = mouse_delta.x * DEG2RAD;
-		float alphaY = mouse_delta.y * DEG2RAD;
+			float alphaX = mouse_delta.x * DEG2RAD;
+			float alphaY = mouse_delta.y * DEG2RAD;
 
-		rotateX.x = direction.x * cos(alphaX) + direction.z * sin(alphaX);
-		rotateX.y = direction.y;
-		rotateX.z = -direction.x * sin(alphaX) + direction.z * cos(alphaX);
+			rotateX.x = direction.x * cos(alphaX) + direction.z * sin(alphaX);
+			rotateX.y = direction.y;
+			rotateX.z = -direction.x * sin(alphaX) + direction.z * cos(alphaX);
 
-		rotateY.x = rotateX.x;
-		rotateY.y = rotateX.y * cos(alphaY) - rotateX.z * sin(alphaY);
-		rotateY.z = rotateX.y * sin(alphaY) + rotateX.z * cos(alphaY);
+			rotateY.x = rotateX.x;
+			rotateY.y = rotateX.y * cos(alphaY) - rotateX.z * sin(alphaY);
+			rotateY.z = rotateX.y * sin(alphaY) + rotateX.z * cos(alphaY);
 
-		this->camera.eye = this->camera.center + rotateY;
+			this->camera.eye = this->camera.center + rotateY;
+		}
+		else if (MODIFY == CENTER) {
+			Vector3 movement = Vector3(mouse_delta.x, mouse_delta.y, 0);
+
+			this->camera.center = this->camera.center + movement;
+		}
 		camera.LookAt(camera.eye, camera.center, camera.up);
 	}
 }

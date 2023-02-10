@@ -30,12 +30,12 @@ void Entity::DrawWireframe(Image* framebuffer, Camera* camera, const Color& c, s
 		Vector3 p2 = camera->ProjectVector(worldVertex2, rend2);
 
 		// Clip to screen
-		p0.x = (p0.x + 1) / 2 * framebuffer->width;
-		p0.y = (p0.y + 1) / 2 * framebuffer->height;
-		p1.x = (p1.x + 1) / 2 * framebuffer->width;
-		p1.y = (p1.y + 1) / 2 * framebuffer->height;
-		p2.x = (p2.x + 1) / 2 * framebuffer->width;
-		p2.y = (p2.y + 1) / 2 * framebuffer->height;
+		p0.x = (p0.x + 1) / 2.0 * framebuffer->width;
+		p0.y = (p0.y + 1) / 2.0 * framebuffer->height;
+		p1.x = (p1.x + 1) / 2.0 * framebuffer->width;
+		p1.y = (p1.y + 1) / 2.0 * framebuffer->height;
+		p2.x = (p2.x + 1) / 2.0 * framebuffer->width;
+		p2.y = (p2.y + 1) / 2.0 * framebuffer->height;
 
 		if (!(rend0 || rend1 || rend2)) {
 			framebuffer->DrawLineBresenham(floor(p0.x), floor(p0.y), floor(p1.x), floor(p1.y), c);
@@ -53,8 +53,8 @@ void Entity::DrawCloud(Image* framebuffer, Camera* camera, const Color& c, std::
 		// World to Clip
 		Vector3 p0 = camera->ProjectVector(worldVertex0, rend0);
 		// Clip to Screen
-		p0.x = (p0.x + 1) / 2 * framebuffer->width;
-		p0.y = (p0.y + 1) / 2 * framebuffer->height;
+		p0.x = (p0.x + 1) / 2.0 * framebuffer->width;
+		p0.y = (p0.y + 1) / 2.0 * framebuffer->height;
 
 		if (!rend0) framebuffer->SetPixelSafe(floor(p0.x), floor(p0.y), c);
 	}
@@ -106,4 +106,8 @@ void Entity::Scale(float scaleX, float scaleY, float scaleZ) {
 
 void Entity::Translate(float dX, float dY, float dZ) {
 	this->modelMatrix.TranslateLocal(dX, dY, dZ);
+}
+
+void Entity::Update(float seconds_elapsed) {
+	this->updateModel();
 }

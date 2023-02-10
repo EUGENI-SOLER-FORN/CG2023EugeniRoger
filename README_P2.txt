@@ -11,4 +11,7 @@ Les funcionalitats són:
 	- Zoom (shortcut Z): s'apropa o s'allunya l'ull de la càmera (sumant el vector que els uneix) en un 10% cada vegada. 
 	- Near/Far (shortcuts N/F): augmenta o disminueix els valors en 1 unitat.
 	- FOV (shortcut V): s'augmenta o es disminueix l'angle de visió en 15º, amb un màxim de 180 i un mínim de 15.
-- Orbit around center: es pot fer mantenint clicat el ratolí i movent-lo. Si es mou de costat s'orbita un cert angle en l'eix X, i si es fa cap amunt o cap avall, s'orbita en leix Y. L'angle és proporcional al desplaçament.
+- Mouse Dragging té dues opcions: 
+	- Orbit (shortcut r): mantenint clicat el ratolí i movent-lo. Si es mou de costat s'orbita un cert angle en l'eix X, i si es fa cap amunt o cap avall, s'orbita en leix Y. L'angle és proporcional al desplaçament. 
+	S'aconsegueix orbitar agafant els vector que uneix center-eye i aplicant-li una rotació en X i en Y. Així la distància no varia perquè no hem canviat el mòdul.
+	- Center (shortcut c): mou només el centre de la càmera, funciona igual que ORBIT però el desplaçament del ratolí ara es tradueix en un desplaçament en X i Y del centre de la càmera.
