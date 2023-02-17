@@ -19,7 +19,6 @@ inline unsigned int clamp(unsigned int x, unsigned int a, unsigned int b) { retu
 inline unsigned char clamp(unsigned char x, unsigned char a, unsigned char b) { return x < a ? a : (x > b ? b : x); }
 
 class Vector3;
-
 // Color class to store colors in unsigned byte
 class Color
 {

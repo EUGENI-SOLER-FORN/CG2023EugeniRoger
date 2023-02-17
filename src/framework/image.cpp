@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "camera.h"
 #include "mesh.h"
+#include "entity.h"
 
 Image::Image() {
 	width = 0; height = 0;
@@ -544,7 +545,7 @@ void Image::DrawImagePixels(const Image& image, int x, int y, bool top) {
 }
 
 
-void Image::ScanLineBresenham(int x0, int y0, int x1, int y1, std::vector<cell>& table) {
+void Image::ScanLineBresenham(int x0, int y0, int x1, int y1, std::vector<cell> &table) {
 	float  inc_E, inc_NE, dx, dy, d;
 	int  x, y, startX, startY, finalX, finalY;
 
@@ -571,7 +572,7 @@ void Image::ScanLineBresenham(int x0, int y0, int x1, int y1, std::vector<cell>&
 	float absDy = dy;
 	absDy = abs(absDy);
 
-	table[y].InstertCandidate(x);
+	if(0 <= y && y < this->height) table[y].InstertCandidate(x);
 	if (absDy < dx) {
 		inc_E = 2 * absDy;
 		inc_NE = 2 * (absDy - dx);
@@ -587,7 +588,7 @@ void Image::ScanLineBresenham(int x0, int y0, int x1, int y1, std::vector<cell>&
 				if (dy < 0) { y--; }
 				else { y++; }
 			}
-			table[y].InstertCandidate(x);
+			if (0 <= y && y < this->height) table[y].InstertCandidate(x);
 		}
 	}
 	else {
@@ -607,7 +608,7 @@ void Image::ScanLineBresenham(int x0, int y0, int x1, int y1, std::vector<cell>&
 				if (dy < 0) { y--; }
 				else { y++; }
 			}
-			table[y].InstertCandidate(x);
+			if (0 <= y && y < this->height) table[y].InstertCandidate(x);
 		}
 	}
 }
@@ -616,14 +617,81 @@ void cell::InstertCandidate(int candidateX) {
 	this->minX = std::min(candidateX, minX);
 }
 
-
 void Image::DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& color) {
-	this->table.clear();
-	for (int i = 0; i < this->height; i++) table.push_back({ INT_MIN, INT_MAX });
+	ATE table;
+	for (int i = 0; i < this->height; i++) table.push_back({ INT_MAX, INT_MIN });
 	ScanLineBresenham(p0.x, p0.y, p1.x, p1.y, table);
-	ScanLineBresenham(p0.x, p0.y, p1.x, p1.y, table);
-	ScanLineBresenham(p0.x, p0.y, p1.x, p1.y, table);
+	ScanLineBresenham(p1.x, p1.y, p2.x, p2.y, table);
+	ScanLineBresenham(p2.x, p2.y, p0.x, p0.y, table);
 	for (int i = 0; i < this->height; i++) {
-		for (int j = table[i].minX; i <= table[i].maxX; j++) this->SetPixelSafe(j, i, color);
+		if (table[i].minX == INT_MAX || table[i].maxX == INT_MIN) continue;
+		for (int j = table[i].minX; j <= table[i].maxX; j++) this->SetPixelSafe(j, i, color);
+	}
+}
+
+void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2, FloatImage* zbuffer){	
+	ATE table;
+	for (int i = 0; i < this->height; i++) table.push_back({ INT_MAX, INT_MIN });
+	ScanLineBresenham(p0.x, p0.y, p1.x, p1.y, table);
+	ScanLineBresenham(p1.x, p1.y, p2.x, p2.y, table);
+	ScanLineBresenham(p2.x, p2.y, p0.x, p0.y, table);
+	for (int i = 0; i < this->height; i++) {
+		if (table[i].minX == INT_MAX || table[i].maxX == INT_MIN) continue;
+		Vector3 barycentric;
+		for (int j = table[i].minX; j <= table[i].maxX; j++) {
+			barycentric = GetWeights(Vector2(j, i), Vector2(p0.x, p0.y), Vector2(p1.x, p1.y), Vector2(p2.x, p2.y));
+			float z = p0.z * barycentric.x + p1.z * barycentric.y + p2.z * barycentric.z;
+			if (zbuffer->GetPixel(j, i) < z) {
+				zbuffer->SetPixel(j, i, z);
+				this->SetPixelSafe(j, i, c0 * barycentric.x + c1 * barycentric.y + c2 * barycentric.z);
+			}
+		}
+	}
+}
+
+Vector3 GetWeights(const Vector2& P, const Vector2& P0, const Vector2& P1, const Vector2& P2){
+	Vector2 v0 = P1 - P0;
+	Vector2 v1 = P2 - P0;
+	Vector2 v2 = P - P0;
+
+	float d00 = v0.Dot(v0);
+	float d01 = v0.Dot(v1);
+	float d11 = v1.Dot(v1);
+	float d20 = v2.Dot(v0);
+	float d21 = v2.Dot(v1);
+	float denom = d00 * d11 - d01 * d01;
+	
+	float v = (d11 * d20 - d01 * d21) / denom;
+	float w = (d00 * d21 - d01 * d20) / denom;
+	float u = 1.0 - (v + w);
+	if (0 <= v && v <= 1 && 0 <= w && w <= 1 && 0 <= u && u <= 1) return Vector3(u, v, w);
+	else return Vector3(-1, -1, -1);
+}
+
+void Image::DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer) {
+	ATE table;
+	for (int i = 0; i < this->height; i++) table.push_back({ INT_MAX, INT_MIN });
+	ScanLineBresenham(triangle.p0.x, triangle.p0.y, triangle.p1.x, triangle.p1.y, table);
+	ScanLineBresenham(triangle.p1.x, triangle.p1.y, triangle.p2.x, triangle.p2.y, table);
+	ScanLineBresenham(triangle.p2.x, triangle.p2.y, triangle.p0.x, triangle.p0.y, table);
+	for (int i = 0; i < this->height; i++) {
+		if (table[i].minX == INT_MAX || table[i].maxX == INT_MIN) continue;
+		Vector3 barycentric;
+		for (int j = table[i].minX; j <= table[i].maxX; j++) {
+			barycentric = GetWeights(Vector2(j, i), Vector2(triangle.p0.x, triangle.p0.y), Vector2(triangle.p1.x, triangle.p1.y), Vector2(triangle.p2.x, triangle.p2.y));
+			if (barycentric.x == -1 || this->height <= i || i < 0 || this->width <= j || j < 0) continue;
+			
+			float z = triangle.p0.z * barycentric.x + triangle.p1.z * barycentric.y + triangle.p2.z * barycentric.z;
+			
+			if (zbuffer->GetPixel(j, i) < z) {
+				zbuffer->SetPixel(j, i, z);
+				if (&triangle.texture != nullptr) {
+					Vector2 UV = triangle.uv0 * barycentric.x + triangle.uv1 * barycentric.y + triangle.uv2 * barycentric.z;
+					Color textureColor = triangle.texture->GetPixelSafe(UV.x * triangle.texture->width, UV.y * triangle.texture->height);
+					this->SetPixelSafe(j, i, textureColor);
+				}
+				else this->SetPixelSafe(j, i, triangle.c0 * barycentric.x + triangle.c1 * barycentric.y + triangle.c2 * barycentric.z);
+			}
+		}
 	}
 }

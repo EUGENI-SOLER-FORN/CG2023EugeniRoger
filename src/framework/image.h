@@ -20,11 +20,13 @@ class FloatImage;
 class Entity;
 class Camera;
 #define ATE std::vector<cell>
+struct sTriangleInfo;
 typedef struct cell {
 	int minX;
 	int maxX;
 	void InstertCandidate(int candidateX);
 }cell;
+Vector3 GetWeights(const Vector2& P, const Vector2& P0, const Vector2& P1, const Vector2& P2);
 // A matrix of pixels
 class Image
 {
@@ -37,7 +39,6 @@ class Image
 	} TGAInfo;
 
 public:
-	ATE table;
 	unsigned int width;
 	unsigned int height;
 	unsigned int bytes_per_pixel = 3; // Bits per pixel
@@ -100,6 +101,10 @@ public:
 	void DrawImagePixels(const Image& image, int x, int y, bool top);
 
 	void DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& color);
+	void DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2);
+	void DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2, FloatImage* zbuffer);
+	void DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer);
+
 	void ScanLineBresenham(int x0, int y0, int x1, int y1, ATE& table);
 
 	// Used to easy code
@@ -117,6 +122,7 @@ public:
 	}
 	#endif
 };
+
 
 // Image storing one float per pixel instead of a 3 or 4 component Color
 

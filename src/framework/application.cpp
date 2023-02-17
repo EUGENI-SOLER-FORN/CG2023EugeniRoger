@@ -4,16 +4,12 @@
 #include "utils.h"
 #include "entity.h" 
 
-#define ZOOM 0
 #define NEAR 1
 #define FAR 2
 #define FOV 3
 
 #define ORBIT false
 #define CENTER true
-
-#define CLOUD false
-#define MESH true
 
 Application::Application(const char* caption, int width, int height)
 {
@@ -32,18 +28,18 @@ Application::Application(const char* caption, int width, int height)
 	this->zBuffer.Resize(w, h);
 	this->camera = Camera();
 	
-	Vector3 eye = Vector3(0, 0, -30);
+	Vector3 eye = Vector3(0, 0, - l30);
 	Vector3 center= Vector3(0, 0, 0);
 	Vector3 up = Vector3(0, 1, 0);
 	this->camera.LookAt(eye, center, up);
 	
-	this->camera.SetPerspective(60 * DEG2RAD, 0.5, 0.01, 100);
+	this->camera.SetPerspective(45 * DEG2RAD, (float)w/h, 0.01, 100);
 
 	Mesh* m = new Mesh();
 	m->LoadOBJ("meshes/lee.obj");
 	scene.push_back(new Entity(m, Color::RED));
 
-	this->ATTRIBUTE = ZOOM;
+	this->ATTRIBUTE = FOV;
 	this->MODIFY = ORBIT;
 }
 
@@ -58,7 +54,7 @@ void Application::Init(void)
 	Vector3 rot = Vector3(0);
 	Vector3 scale = Vector3(30);
 	scene[0]->SetModelMatrix(trans, rot, scale);
-
+	if (scene[0]->texture->LoadTGA("textures/lee_color_specular.tga", true)) std::cout << "Texture loaded" << std::endl;
 	std::cout << "Initiating..." << std::endl;
 }
 
@@ -67,6 +63,7 @@ void Application::Render(void)
 {
 	// ...
 	framebuffer.Fill(Color::BLACK);
+	zBuffer.Fill(INT_MIN);
 
 	scene[0]->Render(&framebuffer, &camera, &zBuffer);
 
@@ -76,7 +73,6 @@ void Application::Render(void)
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-
 
 }
 
@@ -98,9 +94,6 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 		// Zoom in/out
 		case SDLK_PAGEUP: 
 			switch (ATTRIBUTE) {
-				case ZOOM:
-					this->camera.eye = this->camera.eye - direction * 0.1;
-					break;
 				case NEAR:
 					if(this->camera.far_plane > this->camera.near_plane + 1) this->camera.near_plane++;
 					break;
@@ -117,9 +110,6 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 
 		case SDLK_PAGEDOWN:
 			switch (ATTRIBUTE) {
-				case ZOOM:
-					this->camera.eye = this->camera.eye + direction * 0.1;
-					break;
 				case NEAR:
 					this->camera.near_plane--;
 					break;
@@ -136,12 +126,12 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 
 		// Move center and eye position
 		case SDLK_LEFT:
-			this->camera.center.x--;
-			this->camera.eye.x--;
-			break; 
-		case SDLK_RIGHT: 
 			this->camera.center.x++;
 			this->camera.eye.x++;
+			break; 
+		case SDLK_RIGHT: 
+			this->camera.center.x--;
+			this->camera.eye.x--;
 			break; 
 		case SDLK_UP:
 			this->camera.center.y++;
@@ -162,16 +152,23 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 		case SDLK_v:
 			ATTRIBUTE = FOV;
 			break;
-		case SDLK_z:
-			ATTRIBUTE = ZOOM;
-			break;
 
 		// Modify Parameters
-		case SDLK_c:
+		case SDLK_m:
 			MODIFY = CENTER;
 			break;
 		case SDLK_r:
 			MODIFY = ORBIT;
+			break;
+
+		case SDLK_c:
+			// Toggle texture
+			break;
+		case SDLK_z:
+			// Toggle occlusion
+			break;
+		case SDLK_t:
+			// Toggle texture
 			break;
 	}
 	std::cout << "FAR: " << this->camera.far_plane << std::endl;
@@ -228,8 +225,9 @@ void Application::OnMouseMove(SDL_MouseButtonEvent event)
 void Application::OnWheel(SDL_MouseWheelEvent event)
 {
 	float dy = event.preciseY;
-
-	// ...
+	Vector3 direction = this->camera.eye - this->camera.center;
+	if (dy > 0) this->camera.eye = this->camera.eye + direction * 0.1;
+	else this->camera.eye = this->camera.eye - direction * 0.1;
 }
 
 void Application::OnFileChanged(const char* filename)
