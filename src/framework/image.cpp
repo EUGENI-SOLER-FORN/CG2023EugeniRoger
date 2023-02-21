@@ -416,67 +416,68 @@ void Image::DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c) {
 
 // Draw line using Besenham method
 void Image::DrawLineBresenham(int x0, int y0, int x1, int y1, const Color& c) {
-	float  inc_E, inc_NE, dx, dy, d;
-	int  x, y, startX, startY, finalX, finalY;
-
-	startX = x0;
-	startY = y0;
-
-	finalX = x1;
-	finalY = y1;
-
+	// 4th and 5th octants
 	if (x1 < x0) {
-		startX = x1;
-		startY = y1;
-
-		finalX = x0;
-		finalY = y0;
+		int t = x1;
+		x1 = x0;
+		x0 = t;
+		t = y1;
+		y1 = y0;
+		y0 = t;
 	}
-
-	dx = finalX - startX;
-	dy = finalY - startY;
-
-	x = startX;
-	y = startY;
-
-	float absDy = dy;
-	absDy = abs(absDy);
-
+	int dx, dy, iE, iNE, d, x, y;
+	dx = x1 - x0;
+	dy = y1 - y0;
+	// 8th octant
+	if (y0 > y1) dy = -dy;
+	iE = 2 * dy;
+	iNE = 2 * (dy - dx);
+	d = 2 * dy - dx;
+	x = x0;
+	y = y0;
 	SetPixelSafe(x, y, c);
-	if (absDy < dx) {
-		inc_E = 2 * absDy;
-		inc_NE = 2 * (absDy - dx);
-		d = 2 * absDy - dx;
-		while (x < finalX) {
+	if (dx > dy) {
+		while (x < x1) {
 			if (d <= 0) {
-				d = d + inc_E;
-				x++;
+				d += iE;
+				x += 1;
 			}
 			else {
-				d = d + inc_NE;
-				x++;
-				if (dy < 0) { y--; }
-				else { y++; }
+				d += iNE;
+				x += 1;
+				if (y0 > y1) // 8th octant
+					y -= 1;
+				else y += 1;
 			}
 			SetPixelSafe(x, y, c);
 		}
 	}
+	// 2nd and 6th octants
 	else {
-		inc_E = 2 * dx;
-		inc_NE = 2 * (dx - absDy);
-		d = 2 * dx - absDy;
-
-		while (y != finalY) {
-			if (0 < d) {
-				d = d - inc_E;
-				if (dy < 0) { y--; }
-				else { y++; }
+		iE = 2 * dx;
+		iNE = 2 * (dx - dy);
+		d = 2 * dx - dy;
+		// 3rd and 7th octants
+		if (y1 < y0) {
+			int t = x1;
+			x1 = x0;
+			x0 = t;
+			t = y1;
+			y1 = y0;
+			y0 = t;
+			x = x0;
+			y = y0;
+		}
+		while (y < y1) {
+			if (d <= 0) {
+				d += iE;
+				y += 1;
 			}
 			else {
-				d = d - inc_NE;
-				x++;
-				if (dy < 0) { y--; }
-				else { y++; }
+				d += iNE;
+				y += 1;
+				if (x0 > x1) x -= 1;
+				else x += 1;
 			}
 			SetPixelSafe(x, y, c);
 		}
@@ -544,74 +545,74 @@ void Image::DrawImagePixels(const Image& image, int x, int y, bool top) {
 	}
 }
 
-
 void Image::ScanLineBresenham(int x0, int y0, int x1, int y1, std::vector<cell> &table) {
-	float  inc_E, inc_NE, dx, dy, d;
-	int  x, y, startX, startY, finalX, finalY;
-
-	startX = x0;
-	startY = y0;
-
-	finalX = x1;
-	finalY = y1;
-
 	if (x1 < x0) {
-		startX = x1;
-		startY = y1;
-
-		finalX = x0;
-		finalY = y0;
+		int t = x1;
+		x1 = x0;
+		x0 = t;
+		t = y1;
+		y1 = y0;
+		y0 = t;
 	}
-
-	dx = finalX - startX;
-	dy = finalY - startY;
-
-	x = startX;
-	y = startY;
-
-	float absDy = dy;
-	absDy = abs(absDy);
-
-	if(0 <= y && y < this->height) table[y].InstertCandidate(x);
-	if (absDy < dx) {
-		inc_E = 2 * absDy;
-		inc_NE = 2 * (absDy - dx);
-		d = 2 * absDy - dx;
-		while (x < finalX) {
+	int dx, dy, iE, iNE, d, x, y;
+	dx = x1 - x0;
+	dy = y1 - y0;
+	// 8th octant
+	if (y0 > y1) dy = -dy;
+	iE = 2 * dy;
+	iNE = 2 * (dy - dx);
+	d = 2 * dy - dx;
+	x = x0;
+	y = y0;
+	if (0 <= y && y < this->height) table[y].InstertCandidate(x);
+	if (dx > dy) {
+		while (x < x1) {
 			if (d <= 0) {
-				d = d + inc_E;
-				x++;
+				d += iE;
+				x += 1;
 			}
 			else {
-				d = d + inc_NE;
-				x++;
-				if (dy < 0) { y--; }
-				else { y++; }
+				d += iNE;
+				x += 1;
+				if (y0 > y1) // 8th octant
+					y -= 1;
+				else y += 1;
 			}
 			if (0 <= y && y < this->height) table[y].InstertCandidate(x);
 		}
 	}
+	// 2nd and 6th octants
 	else {
-		inc_E = 2 * dx;
-		inc_NE = 2 * (dx - absDy);
-		d = 2 * dx - absDy;
-
-		while (y != finalY) {
-			if (0 < d) {
-				d = d - inc_E;
-				if (dy < 0) { y--; }
-				else { y++; }
+		iE = 2 * dx;
+		iNE = 2 * (dx - dy);
+		d = 2 * dx - dy;
+		// 3rd and 7th octants
+		if (y1 < y0) {
+			int t = x1;
+			x1 = x0;
+			x0 = t;
+			t = y1;
+			y1 = y0;
+			y0 = t;
+			x = x0;
+			y = y0;
+		}
+		while (y < y1) {
+			if (d <= 0) {
+				d += iE;
+				y += 1;
 			}
 			else {
-				d = d - inc_NE;
-				x++;
-				if (dy < 0) { y--; }
-				else { y++; }
+				d += iNE;
+				y += 1;
+				if (x0 > x1) x -= 1;
+				else x += 1;
 			}
 			if (0 <= y && y < this->height) table[y].InstertCandidate(x);
 		}
 	}
 }
+
 void cell::InstertCandidate(int candidateX) {
 	this->maxX = std::max(candidateX, maxX);
 	this->minX = std::min(candidateX, minX);
@@ -663,9 +664,9 @@ Vector3 GetWeights(const Vector2& P, const Vector2& P0, const Vector2& P1, const
 	
 	float v = (d11 * d20 - d01 * d21) / denom;
 	float w = (d00 * d21 - d01 * d20) / denom;
+	clamp(v, 0.0, 1.0); clamp(w, 0.0, 1.0);
 	float u = 1.0 - (v + w);
-	if (0 <= v && v <= 1 && 0 <= w && w <= 1 && 0 <= u && u <= 1) return Vector3(u, v, w);
-	else return Vector3(-1, -1, -1);
+	return Vector3(u, v, w);
 }
 
 void Image::DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer) {

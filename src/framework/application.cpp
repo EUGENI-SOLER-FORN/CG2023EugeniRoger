@@ -28,7 +28,7 @@ Application::Application(const char* caption, int width, int height)
 	this->zBuffer.Resize(w, h);
 	this->camera = Camera();
 	
-	Vector3 eye = Vector3(0, 0, - l30);
+	Vector3 eye = Vector3(0, 0, -30);
 	Vector3 center= Vector3(0, 0, 0);
 	Vector3 up = Vector3(0, 1, 0);
 	this->camera.LookAt(eye, center, up);
@@ -226,8 +226,8 @@ void Application::OnWheel(SDL_MouseWheelEvent event)
 {
 	float dy = event.preciseY;
 	Vector3 direction = this->camera.eye - this->camera.center;
-	if (dy > 0) this->camera.eye = this->camera.eye + direction * 0.1;
-	else this->camera.eye = this->camera.eye - direction * 0.1;
+	if (dy > 0) this->camera.eye = this->camera.eye - direction * 0.1;
+	else this->camera.eye = this->camera.eye + direction * 0.1;
 }
 
 void Application::OnFileChanged(const char* filename)
