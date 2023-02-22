@@ -17,8 +17,11 @@ void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer) {
 		case eRenderMode::WIREFRAME:	this->DrawWireframe(framebuffer, camera, zBuffer, vertices); break;
 		case eRenderMode::TRIANGLES:	this->DrawEntityTriangles(framebuffer, camera, zBuffer, vertices); break;
 		case eRenderMode::TRIANGLES_INTERPOLATED:	this->DrawEntityTrianglesInterpolated(framebuffer, camera, zBuffer, vertices); break;
+		case eRenderMode::TEXTURE:	this->DrawEntityTrianglesInterpolated(framebuffer, camera, zBuffer, vertices); break;
 	}
 }
+
+
 
 void Entity::DrawWireframe(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices) {
 	for (int i = 0; i < vertices.size()-2; i += 3) {
@@ -95,7 +98,7 @@ void Entity::DrawEntityTriangles(Image* framebuffer, Camera* camera, FloatImage*
 	}
 }
 
-void Entity::DrawEntityTrianglesInterpolated(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices) {
+void Entity::DrawEntityTrianglesInterpolated(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices, bool oclusions) {
 	std::vector<Vector2> UVs = this->entityMesh->GetUVs();
 	for (int i = 0; i < vertices.size() - 2; i += 3) {
 		bool rend0, rend1, rend2;
@@ -118,8 +121,16 @@ void Entity::DrawEntityTrianglesInterpolated(Image* framebuffer, Camera* camera,
 		p2.y = (p2.y + 1) / 2.0 * framebuffer->height;
 
 		if (!(rend0 || rend1 || rend2)) {
-			sTriangleInfo triangle = { p0, p1, p2, UVs[i], UVs[i + 1], UVs[i + 2], Color::RED, Color::GREEN, Color::GREEN, this->texture };
-			framebuffer->DrawTriangleInterpolated(triangle, zBuffer);
+			if(this->MODE==eRenderMode::TEXTURE){
+				sTriangleInfo triangle = { p0, p1, p2, UVs[i], UVs[i + 1], UVs[i + 2], Color::RED, Color::GREEN, Color::GREEN, this->texture };
+				framebuffer->DrawTriangleInterpolated(triangle, zBuffer);
+			}
+			else {
+				
+				sTriangleInfo triangle = { p0, p1, p2, UVs[i], UVs[i + 1], UVs[i + 2], Color::RED, Color::GREEN, Color::GREEN, 0 };
+				framebuffer->DrawTriangleInterpolated(triangle, zBuffer);
+			}
+			
 		}
 	}
 }

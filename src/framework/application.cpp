@@ -88,7 +88,7 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 	switch(event.keysym.sym) {
 		case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
 		// Change perspective mode
-		case SDLK_p: this->camera.SetPerspective(4*alpha, 0.5, this->camera.near_plane, this->camera.far_plane); break;
+		case SDLK_p: this->camera.SetPerspective(4 * alpha, (float)this->window_width/this->window_height, this->camera.near_plane, this->camera.far_plane); break;
 		case SDLK_o: this->camera.SetOrthographic(-100, 100, 100, -100, this->camera.near_plane, this->camera.far_plane); break;
 		
 		// Zoom in/out
@@ -161,14 +161,16 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 			MODIFY = ORBIT;
 			break;
 
+		// Change Modes
 		case SDLK_c:
-			// Toggle texture
+			if (scene[0]->MODE == eRenderMode::TRIANGLES) scene[0]->MODE = eRenderMode::WIREFRAME;
+			else scene[0]->MODE = eRenderMode::TRIANGLES;
 			break;
 		case SDLK_z:
-			// Toggle occlusion
+			OCLUSION =! OCLUSION;
 			break;
 		case SDLK_t:
-			// Toggle texture
+			scene[0]->MODE = eRenderMode::TEXTURE;
 			break;
 	}
 	std::cout << "FAR: " << this->camera.far_plane << std::endl;

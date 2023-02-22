@@ -29,6 +29,7 @@ public:
 
 	int ATTRIBUTE = 0;
 	bool MODIFY = false;
+	bool OCLUSION = false;
 
 	bool MOVING_CAMERA = false;
 	std::vector<Entity*> scene;

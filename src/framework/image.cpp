@@ -630,7 +630,7 @@ void Image::DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2
 	}
 }
 
-void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2, FloatImage* zbuffer){	
+void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2, FloatImage* zbuffer, bool oclusions){	
 	ATE table;
 	for (int i = 0; i < this->height; i++) table.push_back({ INT_MAX, INT_MIN });
 	ScanLineBresenham(p0.x, p0.y, p1.x, p1.y, table);
@@ -669,7 +669,7 @@ Vector3 GetWeights(const Vector2& P, const Vector2& P0, const Vector2& P1, const
 	return Vector3(u, v, w);
 }
 
-void Image::DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer) {
+void Image::DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer, bool oclusions) {
 	ATE table;
 	for (int i = 0; i < this->height; i++) table.push_back({ INT_MAX, INT_MIN });
 	ScanLineBresenham(triangle.p0.x, triangle.p0.y, triangle.p1.x, triangle.p1.y, table);
@@ -683,8 +683,15 @@ void Image::DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* 
 			if (barycentric.x == -1 || this->height <= i || i < 0 || this->width <= j || j < 0) continue;
 			
 			float z = triangle.p0.z * barycentric.x + triangle.p1.z * barycentric.y + triangle.p2.z * barycentric.z;
-			
-			if (zbuffer->GetPixel(j, i) < z) {
+			if (!oclusions) {
+				if (&triangle.texture != nullptr) {
+					Vector2 UV = triangle.uv0 * barycentric.x + triangle.uv1 * barycentric.y + triangle.uv2 * barycentric.z;
+					Color textureColor = triangle.texture->GetPixelSafe(UV.x * triangle.texture->width, UV.y * triangle.texture->height);
+					this->SetPixelSafe(j, i, textureColor);
+				}
+				else this->SetPixelSafe(j, i, triangle.c0 * barycentric.x + triangle.c1 * barycentric.y + triangle.c2 * barycentric.z);
+			}
+			else if (zbuffer->GetPixel(j, i) < z) {
 				zbuffer->SetPixel(j, i, z);
 				if (&triangle.texture != nullptr) {
 					Vector2 UV = triangle.uv0 * barycentric.x + triangle.uv1 * barycentric.y + triangle.uv2 * barycentric.z;

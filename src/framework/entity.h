@@ -23,15 +23,18 @@ typedef struct sTriangleInfo {
 	Image* texture;
 }sTriangleInfo;
 
+enum class eRenderMode {
+	POINTCLOUD,
+	WIREFRAME,
+	TRIANGLES,
+	TRIANGLES_INTERPOLATED,
+	TEXTURE
+};
+
 class Entity
 {
 public:
-	enum class eRenderMode {
-		POINTCLOUD,
-		WIREFRAME,
-		TRIANGLES,
-		TRIANGLES_INTERPOLATED
-	};
+	
 	eRenderMode MODE = eRenderMode::TRIANGLES_INTERPOLATED;
 	Mesh* entityMesh;
 	Matrix44 RotationMatrix;
@@ -74,7 +77,8 @@ public:
 	void DrawCloud(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices);
 	void DrawWireframe(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices);
 	void DrawEntityTriangles(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices);
-	void DrawEntityTrianglesInterpolated(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices);
+	void DrawEntityTrianglesInterpolated(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices, bool oclusions=true);
+
 
 	void Update(float seconds_elapsed);
 private:
