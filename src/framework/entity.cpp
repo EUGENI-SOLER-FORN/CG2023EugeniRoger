@@ -10,14 +10,14 @@
 
 #include "entity.h"
 
-void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer) {
+void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer, bool OCCLUSION, bool TEXTURE) {
 	std::vector<Vector3> vertices = this->entityMesh->GetVertices();
 	switch (MODE) {
 		case eRenderMode::POINTCLOUD:	this->DrawCloud(framebuffer, camera, zBuffer, vertices); break;
 		case eRenderMode::WIREFRAME:	this->DrawWireframe(framebuffer, camera, zBuffer, vertices); break;
 		case eRenderMode::TRIANGLES:	this->DrawEntityTriangles(framebuffer, camera, zBuffer, vertices); break;
-		case eRenderMode::TRIANGLES_INTERPOLATED:	this->DrawEntityTrianglesInterpolated(framebuffer, camera, zBuffer, vertices); break;
-		case eRenderMode::TEXTURE:	this->DrawEntityTrianglesInterpolated(framebuffer, camera, zBuffer, vertices); break;
+		case eRenderMode::TRIANGLES_INTERPOLATED:	this->DrawEntityTrianglesInterpolated(framebuffer, camera, zBuffer, vertices, OCCLUSION, TEXTURE); break;
+		case eRenderMode::TEXTURE:	this->DrawEntityTrianglesInterpolated(framebuffer, camera, zBuffer, vertices, OCCLUSION, TEXTURE); break;
 	}
 }
 
@@ -37,12 +37,12 @@ void Entity::DrawWireframe(Image* framebuffer, Camera* camera, FloatImage* zBuff
 		Vector3 p2 = camera->ProjectVector(worldVertex2, rend2);
 
 		// Clip to screen
-		p0.x = (p0.x + 1) / 2.0 * framebuffer->width;
-		p0.y = (p0.y + 1) / 2.0 * framebuffer->height;
-		p1.x = (p1.x + 1) / 2.0 * framebuffer->width;
-		p1.y = (p1.y + 1) / 2.0 * framebuffer->height;
-		p2.x = (p2.x + 1) / 2.0 * framebuffer->width;
-		p2.y = (p2.y + 1) / 2.0 * framebuffer->height;
+		p0.x = (p0.x + 1) / 2.0 * (framebuffer->width - 1);
+		p0.y = (p0.y + 1) / 2.0 * (framebuffer->height - 1);
+		p1.x = (p1.x + 1) / 2.0 * (framebuffer->width - 1);
+		p1.y = (p1.y + 1) / 2.0 * (framebuffer->height - 1);
+		p2.x = (p2.x + 1) / 2.0 * (framebuffer->width - 1);
+		p2.y = (p2.y + 1) / 2.0 * (framebuffer->height - 1);
 
 		if (!(rend0 || rend1 || rend2)) {
 			framebuffer->DrawLineBresenham(floor(p0.x), floor(p0.y), floor(p1.x), floor(p1.y), this->entityColor);
@@ -60,10 +60,14 @@ void Entity::DrawCloud(Image* framebuffer, Camera* camera, FloatImage* zBuffer, 
 		// World to Clip
 		Vector3 p0 = camera->ProjectVector(worldVertex0, rend0);
 		// Clip to Screen
-		p0.x = (p0.x + 1) / 2.0 * framebuffer->width;
-		p0.y = (p0.y + 1) / 2.0 * framebuffer->height;
+		p0.x = (p0.x + 1) / 2.0 * (framebuffer->width - 1);
+		p0.y = (p0.y + 1) / 2.0 * (framebuffer->height - 1);
 
-		if (!rend0) framebuffer->SetPixelSafe(floor(p0.x), floor(p0.y), this->entityColor);
+		if (!rend0) {
+			if (this->SIDE == BOTH) framebuffer->SetPixelSafe(floor(p0.x), floor(p0.y), this->entityColor);
+			else if (this->SIDE == LEFT && p0.x <= framebuffer->width / 2.0) framebuffer->SetPixelSafe(floor(p0.x), floor(p0.y), this->entityColor);
+			else if (this->SIDE == RIGHT && p0.x > framebuffer->width / 2.0) framebuffer->SetPixelSafe(floor(p0.x), floor(p0.y), this->entityColor);
+		}
 	}
 }
 
@@ -82,23 +86,25 @@ void Entity::DrawEntityTriangles(Image* framebuffer, Camera* camera, FloatImage*
 		Vector3 p2 = camera->ProjectVector(worldVertex2, rend2);
 
 		// Clip to screen
-		p0.x = (p0.x + 1) / 2.0 * framebuffer->width;
-		p0.y = (p0.y + 1) / 2.0 * framebuffer->height;
-		p1.x = (p1.x + 1) / 2.0 * framebuffer->width;
-		p1.y = (p1.y + 1) / 2.0 * framebuffer->height;
-		p2.x = (p2.x + 1) / 2.0 * framebuffer->width;
-		p2.y = (p2.y + 1) / 2.0 * framebuffer->height;
+		p0.x = (p0.x + 1) / 2.0 * (framebuffer->width - 1);
+		p0.y = (p0.y + 1) / 2.0 * (framebuffer->height - 1);
+		p1.x = (p1.x + 1) / 2.0 * (framebuffer->width - 1);
+		p1.y = (p1.y + 1) / 2.0 * (framebuffer->height - 1);
+		p2.x = (p2.x + 1) / 2.0 * (framebuffer->width - 1);
+		p2.y = (p2.y + 1) / 2.0 * (framebuffer->height - 1);
 
 		if (!(rend0 || rend1 || rend2)) {
 			Vector2 p0proj = Vector2(p0.x, p0.y);
 			Vector2 p1proj = Vector2(p1.x, p1.y);
 			Vector2 p2proj = Vector2(p2.x, p2.y);
-			framebuffer->DrawTriangle(p0proj, p1proj, p2proj, this->entityColor);
+			if(this->SIDE == BOTH) framebuffer->DrawTriangle(p0proj, p1proj, p2proj, this->entityColor);
+			else if (this->SIDE == LEFT && (p0.x <= framebuffer->width / 2.0 && p1.x <= framebuffer->width / 2.0 && p2.x <= framebuffer->width / 2.0)) framebuffer->DrawTriangle(p0proj, p1proj, p2proj, this->entityColor);
+			else if (this->SIDE == RIGHT && (p0.x > framebuffer->width / 2.0 && p1.x > framebuffer->width / 2.0 && p2.x > framebuffer->width / 2.0)) framebuffer->DrawTriangle(p0proj, p1proj, p2proj, this->entityColor);
 		}
 	}
 }
 
-void Entity::DrawEntityTrianglesInterpolated(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices, bool oclusions) {
+void Entity::DrawEntityTrianglesInterpolated(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices, bool OCCLUSION, bool TEXTURE) {
 	std::vector<Vector2> UVs = this->entityMesh->GetUVs();
 	for (int i = 0; i < vertices.size() - 2; i += 3) {
 		bool rend0, rend1, rend2;
@@ -113,24 +119,18 @@ void Entity::DrawEntityTrianglesInterpolated(Image* framebuffer, Camera* camera,
 		Vector3 p2 = camera->ProjectVector(worldVertex2, rend2);
 
 		// Clip to screen
-		p0.x = (p0.x + 1) / 2.0 * framebuffer->width;
-		p0.y = (p0.y + 1) / 2.0 * framebuffer->height;
-		p1.x = (p1.x + 1) / 2.0 * framebuffer->width;
-		p1.y = (p1.y + 1) / 2.0 * framebuffer->height;
-		p2.x = (p2.x + 1) / 2.0 * framebuffer->width;
-		p2.y = (p2.y + 1) / 2.0 * framebuffer->height;
+		p0.x = (p0.x + 1) / 2.0 * (framebuffer->width - 1);
+		p0.y = (p0.y + 1) / 2.0 * (framebuffer->height - 1);
+		p1.x = (p1.x + 1) / 2.0 * (framebuffer->width - 1);
+		p1.y = (p1.y + 1) / 2.0 * (framebuffer->height - 1);
+		p2.x = (p2.x + 1) / 2.0 * (framebuffer->width - 1);
+		p2.y = (p2.y + 1) / 2.0 * (framebuffer->height - 1);
 
 		if (!(rend0 || rend1 || rend2)) {
-			if(this->MODE==eRenderMode::TEXTURE){
-				sTriangleInfo triangle = { p0, p1, p2, UVs[i], UVs[i + 1], UVs[i + 2], Color::RED, Color::GREEN, Color::GREEN, this->texture };
-				framebuffer->DrawTriangleInterpolated(triangle, zBuffer);
-			}
-			else {
-				
-				sTriangleInfo triangle = { p0, p1, p2, UVs[i], UVs[i + 1], UVs[i + 2], Color::RED, Color::GREEN, Color::GREEN, 0 };
-				framebuffer->DrawTriangleInterpolated(triangle, zBuffer);
-			}
-			
+			sTriangleInfo triangle = { p0, p1, p2, UVs[i], UVs[i + 1], UVs[i + 2], Color::RED, Color::GREEN, Color::GREEN, this->texture };
+			if(this->SIDE == BOTH) framebuffer->DrawTriangleInterpolated(triangle, zBuffer, OCCLUSION, TEXTURE);
+			else if (this->SIDE == LEFT && (p0.x <= framebuffer->width / 2.0 && p1.x <= framebuffer->width / 2.0 && p2.x <= framebuffer->width / 2.0)) framebuffer->DrawTriangleInterpolated(triangle, zBuffer, OCCLUSION, TEXTURE);
+			else if (this->SIDE == RIGHT && (p0.x > framebuffer->width / 2.0 && p1.x > framebuffer->width / 2.0 && p2.x > framebuffer->width / 2.0)) framebuffer->DrawTriangleInterpolated(triangle, zBuffer, OCCLUSION, TEXTURE);
 		}
 	}
 }

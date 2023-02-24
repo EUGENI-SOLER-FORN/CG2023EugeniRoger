@@ -30,11 +30,13 @@ enum class eRenderMode {
 	TRIANGLES_INTERPOLATED,
 	TEXTURE
 };
-
+#define BOTH 0
+#define RIGHT 1
+#define LEFT 2
 class Entity
 {
 public:
-	
+	int SIDE = BOTH;
 	eRenderMode MODE = eRenderMode::TRIANGLES_INTERPOLATED;
 	Mesh* entityMesh;
 	Matrix44 RotationMatrix;
@@ -64,7 +66,7 @@ public:
 	~Entity() { delete entityMesh; }
 
 	void setMesh(Mesh* m) { entityMesh = m; }
-	void Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer);
+	void Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer, bool OCCLUSION = true, bool TEXTURE = false);
 
 	void SetDefaultMatrix();
 	void SetModelMatrix(Vector3 translation, Vector3 rotation, Vector3 scale, bool radians = true);
@@ -77,7 +79,7 @@ public:
 	void DrawCloud(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices);
 	void DrawWireframe(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices);
 	void DrawEntityTriangles(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices);
-	void DrawEntityTrianglesInterpolated(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices, bool oclusions=true);
+	void DrawEntityTrianglesInterpolated(Image* framebuffer, Camera* camera, FloatImage* zBuffer, std::vector<Vector3> vertices, bool OCCLUSION = true, bool TEXTURE = false);
 
 
 	void Update(float seconds_elapsed);

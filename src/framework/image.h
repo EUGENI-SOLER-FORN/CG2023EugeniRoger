@@ -102,11 +102,12 @@ public:
 
 	void DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& color);
 	void DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2);
-	void DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2, FloatImage* zbuffer, bool oclusions=true);
-	void DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer, bool oclusions=true);
+	void DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2, FloatImage* zbuffer, bool OCCLUSION = true, bool TEXTURE = false);
+	void DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer, bool OCCLUSION = true, bool TEXTURE = false);
 
 	void ScanLineBresenham(int x0, int y0, int x1, int y1, ATE& table);
 
+	void DrawMidline();
 	// Used to easy code
 	#ifndef IGNORE_LAMBDAS
 
