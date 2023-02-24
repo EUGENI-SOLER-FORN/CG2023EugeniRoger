@@ -46,7 +46,6 @@ Application::Application(const char* caption, int width, int height)
 
 Application::~Application()
 {
-	SDL_DestroyWindow(window);
 }
 
 void Application::Init(void)
