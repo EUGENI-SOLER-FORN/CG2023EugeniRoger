@@ -38,7 +38,7 @@ Application::Application(const char* caption, int width, int height)
 	Mesh* m = new Mesh();
 	m->LoadOBJ("meshes/lee.obj");
 	scene.push_back(new Entity(m, Color::RED));
-	scene.push_back(new Entity(m, Color::BLUE));
+	scene.push_back(new Entity(m, Color::WHITE));
 
 	this->ATTRIBUTE = FOV;
 	this->MODIFY = ORBIT;
@@ -104,7 +104,7 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 		case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
 		// Change perspective mode
 		case SDLK_p: this->camera.SetPerspective(4 * alpha, (float)this->window_width/this->window_height, this->camera.near_plane, this->camera.far_plane); break;
-		case SDLK_o: this->camera.SetOrthographic(-100, 100, 100, -100, this->camera.near_plane, this->camera.far_plane); break;
+		case SDLK_o: this->camera.SetOrthographic(-1, 1, 1, -1, this->camera.near_plane, this->camera.far_plane); break;
 		
 		// Zoom in/out
 		case SDLK_PAGEUP: 
@@ -179,6 +179,9 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 		// Change Modes
 		case SDLK_c:
 			scene[1]->MODE = (scene[1]->MODE == eRenderMode::TRIANGLES) ? eRenderMode::WIREFRAME : eRenderMode::TRIANGLES;
+			break;
+		case SDLK_w:
+			scene[1]->MODE = (scene[1]->MODE == eRenderMode::WIREFRAME) ? eRenderMode::POINTCLOUD : eRenderMode::WIREFRAME;
 			break;
 		case SDLK_z: OCCLUSION =! OCCLUSION;	break;
 		case SDLK_t: TEXTURE = !TEXTURE;	break;

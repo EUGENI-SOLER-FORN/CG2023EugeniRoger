@@ -66,7 +66,7 @@ void Entity::DrawCloud(Image* framebuffer, Camera* camera, FloatImage* zBuffer, 
 		if (!rend0) {
 			if (this->SIDE == BOTH) framebuffer->SetPixelSafe(floor(p0.x), floor(p0.y), this->entityColor);
 			else if (this->SIDE == LEFT && p0.x <= framebuffer->width / 2.0) framebuffer->SetPixelSafe(floor(p0.x), floor(p0.y), this->entityColor);
-			else if (this->SIDE == RIGHT && p0.x > framebuffer->width / 2.0) framebuffer->SetPixelSafe(floor(p0.x), floor(p0.y), this->entityColor);
+			else if (this->SIDE == RIGHT && p0.x >= framebuffer->width / 2.0) framebuffer->SetPixelSafe(floor(p0.x), floor(p0.y), this->entityColor);
 		}
 	}
 }
@@ -99,7 +99,7 @@ void Entity::DrawEntityTriangles(Image* framebuffer, Camera* camera, FloatImage*
 			Vector2 p2proj = Vector2(p2.x, p2.y);
 			if(this->SIDE == BOTH) framebuffer->DrawTriangle(p0proj, p1proj, p2proj, this->entityColor);
 			else if (this->SIDE == LEFT && (p0.x <= framebuffer->width / 2.0 && p1.x <= framebuffer->width / 2.0 && p2.x <= framebuffer->width / 2.0)) framebuffer->DrawTriangle(p0proj, p1proj, p2proj, this->entityColor);
-			else if (this->SIDE == RIGHT && (p0.x > framebuffer->width / 2.0 && p1.x > framebuffer->width / 2.0 && p2.x > framebuffer->width / 2.0)) framebuffer->DrawTriangle(p0proj, p1proj, p2proj, this->entityColor);
+			else if (this->SIDE == RIGHT && (p0.x >= framebuffer->width / 2.0 && p1.x >= framebuffer->width / 2.0 && p2.x >= framebuffer->width / 2.0)) framebuffer->DrawTriangle(p0proj, p1proj, p2proj, this->entityColor);
 		}
 	}
 }
@@ -127,10 +127,10 @@ void Entity::DrawEntityTrianglesInterpolated(Image* framebuffer, Camera* camera,
 		p2.y = (p2.y + 1) / 2.0 * (framebuffer->height - 1);
 
 		if (!(rend0 || rend1 || rend2)) {
-			sTriangleInfo triangle = { p0, p1, p2, UVs[i], UVs[i + 1], UVs[i + 2], Color::RED, Color::GREEN, Color::GREEN, this->texture };
+			sTriangleInfo triangle = { p0, p1, p2, UVs[i], UVs[i + 1], UVs[i + 2], Color::RED, Color::GREEN, Color::BLUE, this->texture };
 			if(this->SIDE == BOTH) framebuffer->DrawTriangleInterpolated(triangle, zBuffer, OCCLUSION, TEXTURE);
 			else if (this->SIDE == LEFT && (p0.x <= framebuffer->width / 2.0 && p1.x <= framebuffer->width / 2.0 && p2.x <= framebuffer->width / 2.0)) framebuffer->DrawTriangleInterpolated(triangle, zBuffer, OCCLUSION, TEXTURE);
-			else if (this->SIDE == RIGHT && (p0.x > framebuffer->width / 2.0 && p1.x > framebuffer->width / 2.0 && p2.x > framebuffer->width / 2.0)) framebuffer->DrawTriangleInterpolated(triangle, zBuffer, OCCLUSION, TEXTURE);
+			else if (this->SIDE == RIGHT && (p0.x >= framebuffer->width / 2.0 && p1.x >= framebuffer->width / 2.0 && p2.x >= framebuffer->width / 2.0)) framebuffer->DrawTriangleInterpolated(triangle, zBuffer, OCCLUSION, TEXTURE);
 		}
 	}
 }
