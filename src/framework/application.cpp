@@ -14,7 +14,6 @@
 Application::Application(const char* caption, int width, int height)
 {
 	this->window = createWindow(caption, width, height);
-
 	int w,h;
 	SDL_GetWindowSize(window,&w,&h);
 
@@ -27,18 +26,7 @@ Application::Application(const char* caption, int width, int height)
 	this->framebuffer.Resize(w, h);
 	this->zBuffer.Resize(w, h);
 	this->camera = Camera();
-	
-	Vector3 eye = Vector3(0, 2, -10);
-	Vector3 center= Vector3(0, 2, 0);
-	Vector3 up = Vector3(0, 1, 0);
-	this->camera.LookAt(eye, center, up);
-	
-	this->camera.SetPerspective(45 * DEG2RAD, (float)w/h, 0.01, 100);
-
-	Mesh* m = new Mesh();
-	m->LoadOBJ("meshes/lee.obj");
-	scene.push_back(new Entity(m, Color::RED));
-	scene.push_back(new Entity(m, Color::WHITE));
+	this->shader = Shader::Get("shaders/quad.vs", "shaders/quad.fs");
 
 	this->ATTRIBUTE = FOV;
 	this->MODIFY = ORBIT;
@@ -50,17 +38,8 @@ Application::~Application()
 
 void Application::Init(void)
 {
-	Vector3 trans = Vector3(0, 0, 0);
-	Vector3 rot = Vector3(0);
-	Vector3 scale = Vector3(10);
-
-	scene[0]->SetModelMatrix(trans, rot, scale);
-	scene[0]->SIDE = RIGHT;
-	if(scene[0]->texture->LoadTGA("textures/lee_color_specular.tga", true)) scene[0]->MODE = eRenderMode::TEXTURE;
-	
-	scene[1]->SetModelMatrix(trans, rot, scale);
-	scene[1]->MODE = eRenderMode::WIREFRAME;
-	scene[1]->SIDE = LEFT;
+	this->mesh = new Mesh();
+	this->mesh->CreateQuad();
 	std::cout << "Initiating..." << std::endl;
 }
 
@@ -68,26 +47,17 @@ void Application::Init(void)
 void Application::Render(void)
 {
 	// ...
-	framebuffer.Fill(Color::BLACK);
-	zBuffer.Fill(INT_MIN);
-
-	scene[1]->Render(&framebuffer, &camera, &zBuffer);
-	scene[0]->Render(&framebuffer, &camera, &zBuffer, OCCLUSION, TEXTURE);
-	framebuffer.DrawMidline();
-	framebuffer.Render();
+	//glEnable(GL_DEPTH_TEST);
+	this->shader->Enable();
+	this->shader->SetFloat("u_task", task);
+	this->mesh->Render();
+	this->shader->Disable();
 }
 
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-	int w, h;
-	SDL_GetWindowSize(window, &w, &h);
-	
-	this->window_width = w;
-	this->window_height = h;
 
-	this->framebuffer.Resize(w, h);
-	this->zBuffer.Resize(w, h);
 }
 
 //keyboard press event 

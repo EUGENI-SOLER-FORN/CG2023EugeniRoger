@@ -87,8 +87,6 @@ void Camera::UpdateViewMatrix()
 	view_matrix.SetIdentity();
 
 	// Comment this line to create your own projection matrix!
-	// SetExampleViewMatrix();
-
 	// Remember how to fill a Matrix4x4 (check framework slides)
 	// Careful with the order of matrix multiplications, and be sure to use normalized vectors!
 	
@@ -121,6 +119,7 @@ void Camera::UpdateViewMatrix()
 	// Translate view matrix
 	// ...
 	view_matrix.TranslateLocal(-eye.x, -eye.y, -eye.z);
+	SetExampleViewMatrix();
 
 	UpdateViewProjectionMatrix();
 }

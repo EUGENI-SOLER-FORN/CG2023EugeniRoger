@@ -8,7 +8,12 @@
 #include "framework.h"
 #include "image.h"
 #include "entity.h" 
+#include "mesh.h"
+#include "shader.h" 
 
+enum eTask{
+	a, b, c, d, e, f
+};
 class Application
 {
 public:
@@ -47,8 +52,10 @@ public:
 	Image framebuffer;
 	FloatImage zBuffer;
 	Camera camera;
-	Entity* e;
-
+	Entity *e;
+	Shader *shader;
+	Mesh *mesh;
+	int task = eTask::a;
 	// Constructor and main methods
 	Application(const char* caption, int width, int height);
 	~Application();
