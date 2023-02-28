@@ -11,8 +11,16 @@
 #include "mesh.h"
 #include "shader.h" 
 
-enum eTask{
+#define EXERCISE_1_TOTAL_TASKS 7
+#define EXERCISE_2_TOTAL_TASKS 6
+#define EXERCISE_3_TOTAL_TASKS 6
+#define EXERCISE_4_TOTAL_TASKS 6
+
+enum eTask {
 	Task_a, Task_b, Task_c, Task_d, Task_e, Task_f, Task_extra
+};
+enum eExer {
+	Exercise1, Exercise3, Exercise2, Exercise4
 };
 class Application
 {
@@ -47,15 +55,22 @@ public:
 	void OnWheel(SDL_MouseWheelEvent event);
 	void OnFileChanged(const char* filename);
 
-
 	// CPU Global framebuffer
 	Image framebuffer;
 	FloatImage zBuffer;
 	Camera camera;
-	Entity *e;
-	Shader *shader;
-	Mesh *mesh;
+	Texture Ex2_image;
+	Entity* e;
+	Shader* exercise1;
+	Shader* exercise2;
+	//Shader* exercise3 = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs");
+	//Shader* exercise4 = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs");
+	Shader* shader;
+
+	Mesh* mesh;
 	int task = eTask::Task_a;
+	int exercise = eExer::Exercise1;
+	int exerciseTasks = Ex1TotalTasks;
 	// Constructor and main methods
 	Application(const char* caption, int width, int height);
 	~Application();

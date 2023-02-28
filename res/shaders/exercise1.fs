@@ -2,7 +2,6 @@ varying vec2 v_position;
 varying vec2 v_uv;
 
 uniform float u_task;
-uniform vec3 u_dimesions;
 
 void main()
 {
