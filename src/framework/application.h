@@ -12,7 +12,7 @@
 #include "shader.h" 
 
 enum eTask{
-	a, b, c, d, e, f
+	Task_a, Task_b, Task_c, Task_d, Task_e, Task_f
 };
 class Application
 {
@@ -55,7 +55,7 @@ public:
 	Entity *e;
 	Shader *shader;
 	Mesh *mesh;
-	int task = eTask::a;
+	int task = eTask::Task_a;
 	// Constructor and main methods
 	Application(const char* caption, int width, int height);
 	~Application();

@@ -1,4 +1,5 @@
 varying vec2 v_uv;
+varying vec2 v_position;
 
 void main()
 {	
@@ -6,4 +7,6 @@ void main()
 	v_uv = gl_MultiTexCoord0.xy;
 
 	gl_Position = gl_Vertex;
+
+	v_position = gl_Vertex.xy;
 }

@@ -26,7 +26,7 @@ Application::Application(const char* caption, int width, int height)
 	this->framebuffer.Resize(w, h);
 	this->zBuffer.Resize(w, h);
 	this->camera = Camera();
-	this->shader = Shader::Get("shaders/quad.vs", "shaders/quad.fs");
+	this->shader = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs");
 
 	this->ATTRIBUTE = FOV;
 	this->MODIFY = ORBIT;
@@ -50,6 +50,8 @@ void Application::Render(void)
 	//glEnable(GL_DEPTH_TEST);
 	this->shader->Enable();
 	this->shader->SetFloat("u_task", task);
+	this->shader->SetVector3("u_dimensions", Vector3(this->window_width, this->window_height, 0));
+
 	this->mesh->Render();
 	this->shader->Disable();
 }
@@ -154,6 +156,14 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 			break;
 		case SDLK_z: OCCLUSION =! OCCLUSION;	break;
 		case SDLK_t: TEXTURE = !TEXTURE;	break;
+
+		case SDLK_PERIOD: task = (task + 1) % 6; break;
+
+		case SDLK_1: this->shader = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs"); break;
+		case SDLK_2: this->shader = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs"); break;
+		case SDLK_3: this->shader = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs"); break;
+		case SDLK_4: this->shader = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs"); break;
+
 	}
 
 	this->camera.UpdateProjectionMatrix();
