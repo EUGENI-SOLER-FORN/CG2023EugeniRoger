@@ -158,8 +158,8 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 		case SDLK_t: TEXTURE = !TEXTURE;	break;
 		
 		// Change between tasks
-		case SDLK_PERIOD: task = (task + 1) % 6; break;
-		case SDLK_COMMA: task = (task + 5) % 6; break;
+		case SDLK_PERIOD: task = (task + 1) % 7; break;
+		case SDLK_COMMA: task = (task + 6) % 7; break;
 
 		// Change between exercises (shaders)
 		case SDLK_1: this->shader = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs"); break;

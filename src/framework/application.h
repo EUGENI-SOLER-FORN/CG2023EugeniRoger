@@ -12,7 +12,7 @@
 #include "shader.h" 
 
 enum eTask{
-	Task_a, Task_b, Task_c, Task_d, Task_e, Task_f
+	Task_a, Task_b, Task_c, Task_d, Task_e, Task_f, Task_extra
 };
 class Application
 {

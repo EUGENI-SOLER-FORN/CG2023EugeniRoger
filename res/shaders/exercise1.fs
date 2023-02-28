@@ -20,4 +20,10 @@ void main()
 	
 	else if(u_task == 5) gl_FragColor = vec4(step(1, mod((v_position.x + 1) * 10, 2)) +(1- step(1, mod((v_position.y + 1) * 10, 2))) - 2 * step(1, mod((v_position.x + 1) * 10, 2)) * (1-step(1, mod((v_position.y + 1) * 10, 2))));
 	
+	else if(u_task == 6) {
+		float x = v_position.x*8;
+		float y = v_position.y*10;
+		float fct = x*x + pow(y - (2 * (x*x + abs(x) - 6)) / (3 * (x*x + abs(x) + 2)), 2) - 36;
+		gl_FragColor = vec4(1-step(0, fct), step(0, fct), step(0, fct), 1.0);
+	}
 }
