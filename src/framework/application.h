@@ -12,9 +12,6 @@
 #include "shader.h" 
 
 #define EXERCISE_1_TOTAL_TASKS 7
-#define EXERCISE_2_TOTAL_TASKS 6
-#define EXERCISE_3_TOTAL_TASKS 2
-#define EXERCISE_4_TOTAL_TASKS 6
 
 enum eTask {
 	Task_a, Task_b, Task_c, Task_d, Task_e, Task_f, Task_extra
@@ -34,6 +31,8 @@ public:
 
 	float time;
 	int pixelRate = 15;
+	int radius = 4;
+	int flip = 0;
 	// Input
 	const Uint8* keystate;
 	int mouse_state; // Tells which buttons are pressed

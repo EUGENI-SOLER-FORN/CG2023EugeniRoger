@@ -5,7 +5,7 @@
 #include "entity.h" 
 #define EXERCISE_1_TOTAL_TASKS 7
 #define EXERCISE_2_TOTAL_TASKS 6
-#define EXERCISE_3_TOTAL_TASKS 6
+#define EXERCISE_3_TOTAL_TASKS 3
 #define EXERCISE_4_TOTAL_TASKS 6
 #define NEAR 1
 #define FAR 2
@@ -63,10 +63,12 @@ void Application::Render(void)
 	//glEnable(GL_DEPTH_TEST);
 	this->shader->Enable();
 	this->shader->SetFloat("u_task", task);
-	this->shader->SetFloat("u_width", this->window_width);
+	this->shader->SetFloat("u_width",  this->window_width);
 	this->shader->SetFloat("u_height", this->window_height);
 	this->shader->SetFloat("u_time", time);
 	this->shader->SetFloat("u_pixelRate", pixelRate);
+	this->shader->SetFloat("u_radius", radius);
+	this->shader->SetFloat("u_flip", flip);
 	this->shader->SetTexture("u_image", &Ex2_image);
 	this->mesh->Render();
 	this->shader->Disable();
@@ -176,12 +178,12 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 		// Change between tasks
 		case SDLK_PERIOD: task = (task + 1) % exerciseTasks; break;
 		case SDLK_COMMA: task = (task + exerciseTasks - 1) % exerciseTasks; break;
-		case SDLK_PLUS: pixelRate = (pixelRate + 1) % 50; break;
-		case SDLK_MINUS: pixelRate = (pixelRate + 99) % 50; break;
+		case SDLK_PLUS:  pixelRate = (pixelRate + 1) % 50;  radius = (radius + 1) % 20;  flip = (flip + 1) % 3; break;
+		case SDLK_MINUS: pixelRate = (pixelRate + 49) % 50; radius = (radius + 19) % 20; flip = (flip + 2) % 3; break;
 
 		// Change between exercises (shaders)
-		case SDLK_2: exercise = eExer::Exercise2; exerciseTasks = EXERCISE_2_TOTAL_TASKS; task = eTask::Task_a; break;
 		case SDLK_1: exercise = eExer::Exercise1; exerciseTasks = EXERCISE_1_TOTAL_TASKS; task = eTask::Task_a; break;
+		case SDLK_2: exercise = eExer::Exercise2; exerciseTasks = EXERCISE_2_TOTAL_TASKS; task = eTask::Task_a; break;
 		case SDLK_3: exercise = eExer::Exercise3; exerciseTasks = EXERCISE_3_TOTAL_TASKS; task = eTask::Task_a; break;
 		case SDLK_4: exercise = eExer::Exercise4; exerciseTasks = EXERCISE_4_TOTAL_TASKS; task = eTask::Task_a; break;
 

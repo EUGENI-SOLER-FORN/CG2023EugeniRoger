@@ -6,12 +6,14 @@ uniform float u_height;
 uniform sampler2D u_image;
 uniform float u_task;
 uniform float u_time;
+uniform float u_radius;
 uniform float u_pixelRate;
+uniform float u_flipped;
 
 void main()
 {
-	gl_FragColor = vec4(1.0);
 	vec4 pixelCol = texture2D(u_image, v_uv);
+	gl_FragColor = pixelCol;
 	
 	if(u_task == 0) {
 		vec2 rotated_uv = v_uv - vec2(0.5, 0.5);
@@ -23,6 +25,10 @@ void main()
 	else if(u_task == 1) {
 		gl_FragColor = texture2D(u_image, vec2(floor(v_uv.x * u_pixelRate)/u_pixelRate, floor(v_uv.y * u_pixelRate)/u_pixelRate));
 	}
-
-
+	else if(u_task == 2){
+		gl_FragColor.x = texture2D(u_image, v_uv - vec2(u_radius)/u_height).x;
+		gl_FragColor.y = texture2D(u_image, v_uv).y;
+		gl_FragColor.z = texture2D(u_image, v_uv + vec2(u_radius)/u_height).z;
+		gl_FragColor.w = 1.0;
+	}
 }

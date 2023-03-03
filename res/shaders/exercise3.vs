@@ -1,5 +1,5 @@
 uniform float u_time;
-
+uniform float u_task;
 varying vec2 v_uv;
 
 void main()
@@ -8,4 +8,5 @@ void main()
 	v_uv = gl_MultiTexCoord0.xy;
 
 	gl_Position = gl_Vertex;
+	
 }
