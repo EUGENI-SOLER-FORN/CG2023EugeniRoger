@@ -31,6 +31,7 @@ Application::Application(const char* caption, int width, int height)
 	this->camera = Camera();
 	exercise1 = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs");
 	exercise2 = Shader::Get("shaders/exercise2.vs", "shaders/exercise2.fs");
+	exercise3 = Shader::Get("shaders/exercise3.vs", "shaders/exercise3.fs");
 	Ex2_image.Load("images/fruits.png", false);
 
 	this->shader = exercise1;
@@ -55,13 +56,17 @@ void Application::Render(void)
 	switch (exercise) {
 		case eExer::Exercise1: this->shader = this->exercise1; break;
 		case eExer::Exercise2: this->shader = this->exercise2; break;
-		case eExer::Exercise3: this->shader = this->exercise1; break;
+		case eExer::Exercise3: this->shader = this->exercise3; break;
 		case eExer::Exercise4: this->shader = this->exercise1; break;
 	}
 	// ...
 	//glEnable(GL_DEPTH_TEST);
 	this->shader->Enable();
 	this->shader->SetFloat("u_task", task);
+	this->shader->SetFloat("u_width", this->window_width);
+	this->shader->SetFloat("u_height", this->window_height);
+	this->shader->SetFloat("u_time", time);
+	this->shader->SetFloat("u_pixelRate", pixelRate);
 	this->shader->SetTexture("u_image", &Ex2_image);
 	this->mesh->Render();
 	this->shader->Disable();
@@ -171,15 +176,16 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 		// Change between tasks
 		case SDLK_PERIOD: task = (task + 1) % exerciseTasks; break;
 		case SDLK_COMMA: task = (task + exerciseTasks - 1) % exerciseTasks; break;
+		case SDLK_PLUS: pixelRate = (pixelRate + 1) % 50; break;
+		case SDLK_MINUS: pixelRate = (pixelRate + 99) % 50; break;
 
 		// Change between exercises (shaders)
-		case SDLK_1: exercise = eExer::Exercise1; exerciseTasks = EXERCISE_1_TOTAL_TASKS; break;
-		case SDLK_2: exercise = eExer::Exercise2; exerciseTasks = EXERCISE_2_TOTAL_TASKS; break;
-		case SDLK_3: exercise = eExer::Exercise3; exerciseTasks = EXERCISE_3_TOTAL_TASKS; break;
-		case SDLK_4: exercise = eExer::Exercise4; exerciseTasks = EXERCISE_4_TOTAL_TASKS; break;
+		case SDLK_2: exercise = eExer::Exercise2; exerciseTasks = EXERCISE_2_TOTAL_TASKS; task = eTask::Task_a; break;
+		case SDLK_1: exercise = eExer::Exercise1; exerciseTasks = EXERCISE_1_TOTAL_TASKS; task = eTask::Task_a; break;
+		case SDLK_3: exercise = eExer::Exercise3; exerciseTasks = EXERCISE_3_TOTAL_TASKS; task = eTask::Task_a; break;
+		case SDLK_4: exercise = eExer::Exercise4; exerciseTasks = EXERCISE_4_TOTAL_TASKS; task = eTask::Task_a; break;
 
 	}
-	task = (task >= exerciseTasks) ? eTask::Task_a : task;
 	this->camera.UpdateProjectionMatrix();
 	this->camera.LookAt(this->camera.eye, this->camera.center, this->camera.up);
 

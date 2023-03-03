@@ -13,7 +13,7 @@
 
 #define EXERCISE_1_TOTAL_TASKS 7
 #define EXERCISE_2_TOTAL_TASKS 6
-#define EXERCISE_3_TOTAL_TASKS 6
+#define EXERCISE_3_TOTAL_TASKS 2
 #define EXERCISE_4_TOTAL_TASKS 6
 
 enum eTask {
@@ -33,7 +33,7 @@ public:
 	int window_height;
 
 	float time;
-
+	int pixelRate = 15;
 	// Input
 	const Uint8* keystate;
 	int mouse_state; // Tells which buttons are pressed
@@ -63,14 +63,14 @@ public:
 	Entity* e;
 	Shader* exercise1;
 	Shader* exercise2;
-	//Shader* exercise3 = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs");
+	Shader* exercise3;
 	//Shader* exercise4 = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs");
 	Shader* shader;
 
 	Mesh* mesh;
 	int task = eTask::Task_a;
 	int exercise = eExer::Exercise1;
-	int exerciseTasks = Ex1TotalTasks;
+	int exerciseTasks = EXERCISE_1_TOTAL_TASKS;
 	// Constructor and main methods
 	Application(const char* caption, int width, int height);
 	~Application();

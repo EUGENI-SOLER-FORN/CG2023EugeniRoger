@@ -1,4 +1,4 @@
-
+uniform float u_time;
 
 varying vec2 v_uv;
 
