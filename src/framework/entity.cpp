@@ -21,6 +21,9 @@ void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer, boo
 		case eRenderMode::TEXTURE:	this->DrawEntityTrianglesInterpolated(framebuffer, camera, zBuffer, vertices, OCCLUSION, TEXTURE); break;
 	}
 }
+void Entity::Render() {
+	this->entityMesh->Render();
+}
 
 
 
@@ -137,9 +140,6 @@ void Entity::DrawEntityTrianglesInterpolated(Image* framebuffer, Camera* camera,
 }
 
 void Entity::SetDefaultMatrix(){
-	this->RotationMatrix.SetIdentity();
-	this->TranslationMatrix.SetIdentity();
-	this->ScaleMatrix.SetIdentity();
 	this->modelMatrix.SetIdentity();
 }
 

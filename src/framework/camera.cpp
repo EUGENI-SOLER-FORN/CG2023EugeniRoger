@@ -6,7 +6,8 @@
 Camera::Camera()
 {
 	view_matrix.SetIdentity();
-	SetOrthographic(-1,1,1,-1,-1,1);
+	type = PERSPECTIVE;
+	this->SetExampleViewMatrix();
 }
 
 Vector3 Camera::GetLocalVector(const Vector3& v)
@@ -119,7 +120,6 @@ void Camera::UpdateViewMatrix()
 	// Translate view matrix
 	// ...
 	view_matrix.TranslateLocal(-eye.x, -eye.y, -eye.z);
-	SetExampleViewMatrix();
 
 	UpdateViewProjectionMatrix();
 }
@@ -131,7 +131,6 @@ void Camera::UpdateProjectionMatrix()
 	projection_matrix.SetIdentity();
 
 	// Comment this line to create your own projection matrix!
-	// SetExampleProjectionMatrix();
 
 	// Remember how to fill a Matrix4x4 (check framework slides)
 	

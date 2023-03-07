@@ -6,7 +6,7 @@
 #define EXERCISE_1_TOTAL_TASKS 7
 #define EXERCISE_2_TOTAL_TASKS 6
 #define EXERCISE_3_TOTAL_TASKS 3
-#define EXERCISE_4_TOTAL_TASKS 6
+#define EXERCISE_4_TOTAL_TASKS 1
 #define NEAR 1
 #define FAR 2
 #define FOV 3
@@ -28,10 +28,17 @@ Application::Application(const char* caption, int width, int height)
 
 	this->framebuffer.Resize(w, h);
 	this->zBuffer.Resize(w, h);
+	
 	this->camera = Camera();
+	Vector3 up = Vector3(0, 1, 0);
+	Vector3 eye = Vector3(0, 0, 1);
+	Vector3 center = Vector3(0, 0, 0);
+	this->camera.LookAt(eye, center, up);
+	this->camera.SetPerspective(45, (float)window_width/window_height, 0.01, 100);
 	exercise1 = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs");
 	exercise2 = Shader::Get("shaders/exercise2.vs", "shaders/exercise2.fs");
 	exercise3 = Shader::Get("shaders/exercise3.vs", "shaders/exercise3.fs");
+	exercise4 = Shader::Get("shaders/raster.vs", "shaders/raster.fs");
 	Ex2_image.Load("images/fruits.png", false);
 
 	this->shader = exercise1;
@@ -45,8 +52,15 @@ Application::~Application()
 
 void Application::Init(void)
 {
+	
 	this->mesh = new Mesh();
 	this->mesh->CreateQuad();
+
+	Mesh* m = new Mesh();
+	m->LoadOBJ("meshes/lee.obj");
+	scene.push_back(new Entity(m, Color::RED));
+	scene[0]->modelMatrix.SetTranslation(0, -0.25, 0);
+	scene[0]->texture_shader->Load("textures/lee_color_specular.tga", false);
 	std::cout << "Initiating..." << std::endl;
 }
 
@@ -57,11 +71,11 @@ void Application::Render(void)
 		case eExer::Exercise1: this->shader = this->exercise1; break;
 		case eExer::Exercise2: this->shader = this->exercise2; break;
 		case eExer::Exercise3: this->shader = this->exercise3; break;
-		case eExer::Exercise4: this->shader = this->exercise1; break;
+		case eExer::Exercise4: this->shader = this->exercise4; break;
 	}
 	// ...
-	//glEnable(GL_DEPTH_TEST);
 	this->shader->Enable();
+	if(this->exercise == eExer::Exercise4) glEnable(GL_DEPTH_TEST);
 	this->shader->SetFloat("u_task", task);
 	this->shader->SetFloat("u_width",  this->window_width);
 	this->shader->SetFloat("u_height", this->window_height);
@@ -69,8 +83,16 @@ void Application::Render(void)
 	this->shader->SetFloat("u_pixelRate", pixelRate);
 	this->shader->SetFloat("u_radius", radius);
 	this->shader->SetFloat("u_flip", flip);
+	
 	this->shader->SetTexture("u_image", &Ex2_image);
-	this->mesh->Render();
+	this->shader->SetTexture("u_texture", scene[0]->texture_shader);
+
+	this->shader->SetMatrix44("u_model", this->scene[0]->modelMatrix);
+	this->shader->SetMatrix44("u_viewprojection", this->camera.viewprojection_matrix);
+
+	if (this->exercise == eExer::Exercise4) scene[0]->Render();
+	else this->mesh->Render();
+
 	this->shader->Disable();
 }
 
@@ -188,9 +210,9 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 		case SDLK_4: exercise = eExer::Exercise4; exerciseTasks = EXERCISE_4_TOTAL_TASKS; task = eTask::Task_a; break;
 
 	}
+	this->camera.SetAspectRatio((float)window_width / window_height);
 	this->camera.UpdateProjectionMatrix();
 	this->camera.LookAt(this->camera.eye, this->camera.center, this->camera.up);
-
 }
 
 void Application::OnMouseButtonDown( SDL_MouseButtonEvent event )

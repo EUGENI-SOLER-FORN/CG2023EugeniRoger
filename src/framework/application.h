@@ -63,7 +63,7 @@ public:
 	Shader* exercise1;
 	Shader* exercise2;
 	Shader* exercise3;
-	//Shader* exercise4 = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs");
+	Shader* exercise4;
 	Shader* shader;
 
 	Mesh* mesh;
