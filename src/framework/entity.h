@@ -68,9 +68,16 @@ public:
 		texture = new Image();
 		texture_shader = new Texture();
 	}
-	~Entity() { delete entityMesh; }
+	Entity(){
+		this->SetDefaultMatrix();
+		texture = new Image();
+		texture_shader = new Texture();
+	}
+	~Entity() { delete entityMesh; delete texture_shader; delete texture; }
 
 	void setMesh(Mesh* m) { entityMesh = m; }
+	void setTexture(Texture* m) { texture_shader = m; }
+	void setTexture(Image* m) { texture = m; }
 	void Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer, bool OCCLUSION = true, bool TEXTURE = false);
 	void Render();
 	void SetDefaultMatrix();

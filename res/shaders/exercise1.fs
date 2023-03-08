@@ -12,7 +12,7 @@ void main()
 	
 	else if(u_task == 1) gl_FragColor = vec4(distance(v_position, vec2(0,0)));
 	
-	else if(u_task == 2) gl_FragColor = vec4(step(5, mod((v_position.x) * 15, 6) ), 0.0, step(5, mod((v_position.y) * 15, 6) ), 1.0);
+	else if(u_task == 2) gl_FragColor = vec4(step(5, mod((v_position.x) * 15, 6)), 0.0, step(5, mod((v_position.y) * 15, 6) ), 1.0);
 	
 	else if(u_task == 3) gl_FragColor = vec4(floor(v_uv.x * 10.0)/10, floor(v_uv.y * 10.0)/10, 0, 1);
 	

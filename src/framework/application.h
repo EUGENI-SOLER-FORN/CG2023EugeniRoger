@@ -46,7 +46,8 @@ public:
 
 	bool MOVING_CAMERA = false;
 	std::vector<Entity*> scene;
-
+	std::vector<Mesh*> meshes;
+	std::vector<Texture*> textrs;
 	void OnKeyPressed(SDL_KeyboardEvent event);
 	void OnMouseButtonDown(SDL_MouseButtonEvent event);
 	void OnMouseButtonUp(SDL_MouseButtonEvent event);
@@ -59,13 +60,11 @@ public:
 	FloatImage zBuffer;
 	Camera camera;
 	Texture Ex2_image;
-	Entity* e;
 	Shader* exercise1;
 	Shader* exercise2;
 	Shader* exercise3;
 	Shader* exercise4;
 	Shader* shader;
-
 	Mesh* mesh;
 	int task = eTask::Task_a;
 	int exercise = eExer::Exercise1;
