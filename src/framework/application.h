@@ -8,6 +8,8 @@
 #include "framework.h"
 #include "image.h"
 #include "entity.h" 
+#include "light.h" 
+#include "material.h" 
 #include "mesh.h"
 #include "shader.h" 
 
@@ -33,8 +35,9 @@ public:
 
 	bool MOVING_CAMERA = false;
 	std::vector<Entity*> scene;
-	std::vector<Mesh*> meshes;
-	std::vector<Texture*> textrs;
+	std::vector<Light*> lights;
+	Vector3 LightAmbient;
+
 	void OnKeyPressed(SDL_KeyboardEvent event);
 	void OnMouseButtonDown(SDL_MouseButtonEvent event);
 	void OnMouseButtonUp(SDL_MouseButtonEvent event);
@@ -44,7 +47,6 @@ public:
 
 	// CPU Global framebuffer
 	Camera camera;
-	Shader* shader = new Shader();
 	int entityNumber = 0;
 	// Constructor and main methods
 	Application(const char* caption, int width, int height);

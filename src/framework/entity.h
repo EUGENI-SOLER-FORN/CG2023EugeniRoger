@@ -10,40 +10,22 @@
 #include "mesh.h"
 #include "texture.h"
 #include "framework.h"
+#include "material.h"
 
 class Entity
 {
 public:
-	Mesh* entityMesh;
-	Color entityColor;
-	Texture* texture_shader;
+	int MeshCount = 0;
+	Mesh* EntityMesh;
+	Material* material;
 	Matrix44 modelMatrix;
 
-	Entity(Mesh* eM, Matrix44 mM, Color c) {
-		this->entityMesh = eM;
-		this->entityColor = c;
-		this->modelMatrix = mM;
-		texture_shader = new Texture();
-	}
-	Entity(Mesh* eM, Color c) {
-		this->entityColor = c;
-		this->entityMesh = eM;
-		this->SetDefaultMatrix();
-		texture_shader = new Texture();
-	}
-	Entity(Color c){
-		this->entityColor = c;
-		this->SetDefaultMatrix();
-		texture_shader = new Texture();
-	}
 	Entity(){
 		this->SetDefaultMatrix();
-		texture_shader = new Texture();
 	}
-	~Entity() { delete entityMesh; delete texture_shader; }
+	~Entity() { delete material; delete EntityMesh; }
 
-	void setMesh(Mesh* m) { entityMesh = m; }
-	void setTexture(Texture* m) { texture_shader = m; }
+	void setMesh(Mesh* m) { EntityMesh = m; }
 	void Render();
 	void SetDefaultMatrix();
 
