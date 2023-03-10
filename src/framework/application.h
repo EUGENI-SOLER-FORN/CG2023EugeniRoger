@@ -11,28 +11,15 @@
 #include "mesh.h"
 #include "shader.h" 
 
-#define EXERCISE_1_TOTAL_TASKS 7
-
-enum eTask {
-	Task_a, Task_b, Task_c, Task_d, Task_e, Task_f, Task_extra
-};
-enum eExer {
-	Exercise1, Exercise3, Exercise2, Exercise4
-};
 class Application
 {
 public:
-
 	// Window
-
 	SDL_Window* window = nullptr;
 	int window_width;
 	int window_height;
 
 	float time;
-	int pixelRate = 15;
-	int radius = 4;
-	int flip = 0;
 	// Input
 	const Uint8* keystate;
 	int mouse_state; // Tells which buttons are pressed
@@ -56,19 +43,9 @@ public:
 	void OnFileChanged(const char* filename);
 
 	// CPU Global framebuffer
-	Image framebuffer;
-	FloatImage zBuffer;
 	Camera camera;
-	Texture Ex2_image;
-	Shader* exercise1;
-	Shader* exercise2;
-	Shader* exercise3;
-	Shader* exercise4;
-	Shader* shader;
-	Mesh* mesh;
-	int task = eTask::Task_a;
-	int exercise = eExer::Exercise1;
-	int exerciseTasks = EXERCISE_1_TOTAL_TASKS;
+	Shader* shader = new Shader();
+	int entityNumber = 0;
 	// Constructor and main methods
 	Application(const char* caption, int width, int height);
 	~Application();

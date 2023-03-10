@@ -3,10 +3,7 @@
 #include "shader.h"
 #include "utils.h"
 #include "entity.h" 
-#define EXERCISE_1_TOTAL_TASKS 7
-#define EXERCISE_2_TOTAL_TASKS 7
-#define EXERCISE_3_TOTAL_TASKS 4
-#define EXERCISE_4_TOTAL_TASKS 3
+#define ENTITIES 3
 #define NEAR 1
 #define FAR 2
 #define FOV 3
@@ -26,40 +23,25 @@ Application::Application(const char* caption, int width, int height)
 	this->window_height = h;
 	this->keystate = SDL_GetKeyboardState(nullptr);
 
-	this->framebuffer.Resize(w, h);
-	this->zBuffer.Resize(w, h);
-	
 	this->camera = Camera();
 	Vector3 up = Vector3(0, 1, 0);
 	Vector3 eye = Vector3(0, 0, 1);
 	Vector3 center = Vector3(0, 0, 0);
 	this->camera.LookAt(eye, center, up);
 	this->camera.SetPerspective(45, (float)window_width/window_height, 0.01, 100);
-	exercise1 = Shader::Get("shaders/exercise1.vs", "shaders/exercise1.fs");
-	exercise2 = Shader::Get("shaders/exercise2.vs", "shaders/exercise2.fs");
-	exercise3 = Shader::Get("shaders/exercise3.vs", "shaders/exercise3.fs");
-	exercise4 = Shader::Get("shaders/raster.vs", "shaders/raster.fs");
-	Ex2_image.Load("images/fruits.png", false);
+	shader = Shader::Get("shaders/raster.vs", "shaders/raster.fs");
 
-	this->shader = exercise1;
 	this->ATTRIBUTE = FOV;
 	this->MODIFY = ORBIT;
 }
 
 Application::~Application()
 {
-	delete exercise1;
-	delete exercise2;
-	delete exercise3;
-	delete exercise4;
-	delete mesh;
+	delete shader;
 }
 
 void Application::Init(void)
 {
-	this->mesh = new Mesh();
-	this->mesh->CreateQuad();
-	
 	Mesh* lee = new Mesh();
 	lee->LoadOBJ("meshes/lee.obj");
 	meshes.push_back(lee);
@@ -80,44 +62,32 @@ void Application::Init(void)
 	Texture* cleoT = new Texture();
 	cleoT->Load("textures/cleo_color_specular.tga", false);
 	textrs.push_back(cleoT);
-	
-	scene.push_back(new Entity());
-	scene[0]->setMesh(meshes[0]);
-	scene[0]->modelMatrix.SetTranslation(0, -0.25, 0.5);
-	scene[0]->setTexture(textrs[0]);
+
+	for (int i = 0; i < ENTITIES; i++) {
+		scene.push_back(new Entity());
+		scene[i]->setMesh(meshes[i]);
+		scene[i]->modelMatrix.SetTranslation(0, -0.25, 0.5);
+		scene[i]->setTexture(textrs[i]);
+	}
 	std::cout << "Initiating..." << std::endl;
 }
 
 // Render one frame
 void Application::Render(void)
 {
-	switch (exercise) {
-		case eExer::Exercise1: this->shader = this->exercise1; break;
-		case eExer::Exercise2: this->shader = this->exercise2; break;
-		case eExer::Exercise3: this->shader = this->exercise3; break;
-		case eExer::Exercise4: this->shader = this->exercise4; break;
-	}
 	// ...
 	this->shader->Enable();
-	if(this->exercise == eExer::Exercise4) glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 	
-	this->shader->SetFloat("u_task", task);
-	this->shader->SetFloat("u_time", time);
-	this->shader->SetFloat("u_radius", radius);
-	this->shader->SetFloat("u_pixelRate", pixelRate);
-	this->shader->SetFloat("u_width",  this->window_width);
-	this->shader->SetFloat("u_height", this->window_height);
-
-	this->shader->SetTexture("u_image", &Ex2_image);
-	this->shader->SetTexture("u_texture", scene[0]->texture_shader);
+	this->shader->SetTexture("u_texture", scene[entityNumber]->texture_shader);
 
 	this->shader->SetVector3("u_mouse_position", Vector3(mouse_position.x, mouse_position.y, 0));
 	
-	this->shader->SetMatrix44("u_model", this->scene[0]->modelMatrix);
+	this->shader->SetMatrix44("u_model", this->scene[entityNumber]->modelMatrix);
 	this->shader->SetMatrix44("u_viewprojection", this->camera.viewprojection_matrix);
 
-	if (this->exercise == eExer::Exercise4) scene[0]->Render();
-	else this->mesh->Render();
+	scene[entityNumber]->Render();
+	
 
 	this->shader->Disable();
 }
@@ -214,36 +184,9 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 			MODIFY = ORBIT;
 			break;
 
-		// Change Modes
-		case SDLK_c:
-			scene[1]->MODE = (scene[1]->MODE == eRenderMode::TRIANGLES) ? eRenderMode::WIREFRAME : eRenderMode::TRIANGLES;
-			break;
-		case SDLK_w:
-			scene[1]->MODE = (scene[1]->MODE == eRenderMode::WIREFRAME) ? eRenderMode::POINTCLOUD : eRenderMode::WIREFRAME;
-			break;
-		case SDLK_z: OCCLUSION =! OCCLUSION;	break;
-		case SDLK_t: TEXTURE = !TEXTURE;	break;
-		
 		// Change between tasks
-		case SDLK_PERIOD: task = (task + 1) % exerciseTasks; 
-			if (exercise == eExer::Exercise4) {
-				scene[0]->setMesh(meshes[task]);
-				scene[0]->setTexture(textrs[task]);
-			}break;
-		case SDLK_COMMA: task = (task + exerciseTasks - 1) % exerciseTasks; 
-			if (exercise == eExer::Exercise4) {
-				scene[0]->setMesh(meshes[task]);
-				scene[0]->setTexture(textrs[task]);
-			}break;
-		case SDLK_PLUS:  pixelRate = (pixelRate + 1) % 50;  radius = (radius + 1) % 20;  flip = (flip + 1) % 3; break;
-		case SDLK_MINUS: pixelRate = (pixelRate + 49) % 50; radius = (radius + 19) % 20; flip = (flip + 2) % 3; break;
-
-		// Change between exercises (shaders)
-		case SDLK_1: exercise = eExer::Exercise1; exerciseTasks = EXERCISE_1_TOTAL_TASKS; task = eTask::Task_a; break;
-		case SDLK_2: exercise = eExer::Exercise2; exerciseTasks = EXERCISE_2_TOTAL_TASKS; task = eTask::Task_a; break;
-		case SDLK_3: exercise = eExer::Exercise3; exerciseTasks = EXERCISE_3_TOTAL_TASKS; task = eTask::Task_a; break;
-		case SDLK_4: exercise = eExer::Exercise4; exerciseTasks = EXERCISE_4_TOTAL_TASKS; task = eTask::Task_a; this->camera.SetPerspective(45, (float)window_width / window_height, 0.01, 100); break;
-
+		case SDLK_PERIOD: entityNumber = (entityNumber + 1) % ENTITIES; break;
+		case SDLK_COMMA: entityNumber = (entityNumber + ENTITIES - 1) % ENTITIES;  break;
 	}
 	this->camera.UpdateProjectionMatrix();
 	this->camera.LookAt(this->camera.eye, this->camera.center, this->camera.up);
@@ -267,7 +210,7 @@ void Application::OnMouseMove(SDL_MouseButtonEvent event)
 {
 	if (MOVING_CAMERA) {
 		if (MODIFY == ORBIT) {
-			std::cout << "ORBIT" << std::endl;
+//			std::cout << "ORBIT" << std::endl;
 
 			Vector3 direction = this->camera.eye - this->camera.center;
 			Vector3 rotateX = Vector3(0);
@@ -288,7 +231,6 @@ void Application::OnMouseMove(SDL_MouseButtonEvent event)
 		}
 		else if (MODIFY == CENTER) {
 			Vector3 movement = Vector3(mouse_delta.x/2, mouse_delta.y/2, 0);
-
 			this->camera.center = this->camera.center + movement;
 		}
 		camera.LookAt(camera.eye, camera.center, camera.up);
@@ -302,11 +244,9 @@ void Application::OnWheel(SDL_MouseWheelEvent event)
 	Vector3 direction = this->camera.eye - this->camera.center;
 	if (dy > 0) {
 		this->camera.eye = this->camera.eye - direction * 0.1;
-		radius++;
 	}
 	else {
 		this->camera.eye = this->camera.eye + direction * 0.1;
-		radius--;
 	}
 }
 
