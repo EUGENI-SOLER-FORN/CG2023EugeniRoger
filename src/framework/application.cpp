@@ -3,6 +3,7 @@
 #include "shader.h"
 #include "utils.h"
 #include "entity.h" 
+#include "material.h" 
 #define ENTITIES 3
 #define NEAR 1
 #define FAR 2
@@ -22,14 +23,21 @@ Application::Application(const char* caption, int width, int height)
 	this->window_width = w;
 	this->window_height = h;
 	this->keystate = SDL_GetKeyboardState(nullptr);
-
+	
+	// Camera settings
 	this->camera = Camera();
 	Vector3 up = Vector3(0, 1, 0);
 	Vector3 eye = Vector3(0, 0, 1);
 	Vector3 center = Vector3(0, 0, 0);
 	this->camera.LookAt(eye, center, up);
 	this->camera.SetPerspective(45, (float)window_width/window_height, 0.01, 100);
-	shader = Shader::Get("shaders/raster.vs", "shaders/raster.fs");
+	
+	// Light settings
+	sLight light0;
+	light0.IntensityDiffuse = Vector3(0.2);
+	light0.IntensitySpecular = Vector3(0.5);
+	light0.LightPosition = Vector3(0);
+	this->lights.push_back(light0);
 
 	this->ATTRIBUTE = FOV;
 	this->MODIFY = ORBIT;
@@ -37,38 +45,29 @@ Application::Application(const char* caption, int width, int height)
 
 Application::~Application()
 {
-	delete shader;
 }
 
 void Application::Init(void)
 {
 	Mesh* lee = new Mesh();
 	lee->LoadOBJ("meshes/lee.obj");
-	meshes.push_back(lee);
 	Texture* leeT = new Texture();
 	leeT->Load("textures/lee_color_specular.tga", false);
-	textrs.push_back(leeT);
-	
-	Mesh* anna = new Mesh();
-	anna->LoadOBJ("meshes/anna.obj");
-	meshes.push_back(anna);
-	Texture* annaT = new Texture();
-	annaT->Load("textures/anna_color_specular.tga", false);
-	textrs.push_back(annaT);
-	
-	Mesh* cleo = new Mesh();
-	cleo->LoadOBJ("meshes/cleo.obj");
-	meshes.push_back(cleo);
-	Texture* cleoT = new Texture();
-	cleoT->Load("textures/cleo_color_specular.tga", false);
-	textrs.push_back(cleoT);
 
-	for (int i = 0; i < ENTITIES; i++) {
-		scene.push_back(new Entity());
-		scene[i]->setMesh(meshes[i]);
-		scene[i]->modelMatrix.SetTranslation(0, -0.25, 0.5);
-		scene[i]->setTexture(textrs[i]);
-	}
+	scene.push_back(new Entity());
+	scene[0]->modelMatrix.SetTranslation(0, -0.25, 0.5);
+	scene[0]->setMesh(lee);
+	
+	Gouraud = Shader::Get("shaders/gouraud.vs", "shaders/gouraud.fs");
+	EntityMaterial = new Material();
+
+	EntityMaterial->setShader(Gouraud);
+	EntityMaterial->setTexture(leeT);
+	EntityMaterial->setReflections(Vector3(0.9), Vector3(0.9), Vector3(0.5));
+	EntityMaterial->setShininess(7);
+	
+	scene[0]->material = EntityMaterial;
+
 	std::cout << "Initiating..." << std::endl;
 }
 
@@ -76,20 +75,14 @@ void Application::Init(void)
 void Application::Render(void)
 {
 	// ...
-	this->shader->Enable();
 	glEnable(GL_DEPTH_TEST);
-	
-	this->shader->SetTexture("u_texture", scene[entityNumber]->texture_shader);
 
-	this->shader->SetVector3("u_mouse_position", Vector3(mouse_position.x, mouse_position.y, 0));
-	
-	this->shader->SetMatrix44("u_model", this->scene[entityNumber]->modelMatrix);
-	this->shader->SetMatrix44("u_viewprojection", this->camera.viewprojection_matrix);
+	data.AmbientLight = this->IntensityAmbient;
+	data.CameraViewProjection = this->camera.GetViewProjectionMatrix();
+	data.nLights = 1;
+	data.Litghts = this->lights;
+	scene[0]->Render(data);
 
-	scene[entityNumber]->Render();
-	
-
-	this->shader->Disable();
 }
 
 // Called after render

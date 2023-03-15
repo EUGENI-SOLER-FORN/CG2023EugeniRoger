@@ -34,9 +34,13 @@ public:
 	bool TEXTURE = true;
 
 	bool MOVING_CAMERA = false;
+
 	std::vector<Entity*> scene;
-	std::vector<Light*> lights;
-	Vector3 LightAmbient;
+	std::vector<sLight> lights;
+	Shader* Gouraud;
+	Material* EntityMaterial;
+	sUniformData data;
+	Vector3 IntensityAmbient;
 
 	void OnKeyPressed(SDL_KeyboardEvent event);
 	void OnMouseButtonDown(SDL_MouseButtonEvent event);

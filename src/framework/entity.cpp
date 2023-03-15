@@ -11,8 +11,11 @@
 
 #include "entity.h"
 
-void Entity::Render() {
-	this->entityMesh->Render();
+void Entity::Render(sUniformData data) {
+	data.EntityModelMatrix = this->modelMatrix;
+	this->material->Enable(data);
+	this->EntityMesh->Render();
+	this->material->Disable();
 }
 
 void Entity::SetDefaultMatrix(){

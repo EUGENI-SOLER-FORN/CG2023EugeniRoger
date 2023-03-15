@@ -7,15 +7,15 @@
 #include "image.h"
 #include "utils.h"
 #include "camera.h"
+#include "light.h" 
+#include "material.h" 
 #include "mesh.h"
 #include "texture.h"
 #include "framework.h"
-#include "material.h"
 
 class Entity
 {
 public:
-	int MeshCount = 0;
 	Mesh* EntityMesh;
 	Material* material;
 	Matrix44 modelMatrix;
@@ -26,7 +26,7 @@ public:
 	~Entity() { delete material; delete EntityMesh; }
 
 	void setMesh(Mesh* m) { EntityMesh = m; }
-	void Render();
+	void Render(sUniformData uniformData);
 	void SetDefaultMatrix();
 
 private:

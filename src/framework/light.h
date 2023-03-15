@@ -10,6 +10,7 @@
 class Light
 {
 public:
+
 	Vector3 LightPosition;
 	Vector3 IntensityDiffuse;
 	Vector3 IntensitySpecular;
