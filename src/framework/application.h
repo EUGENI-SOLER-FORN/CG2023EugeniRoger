@@ -31,12 +31,13 @@ public:
 	int ATTRIBUTE = 0;
 	bool MODIFY = false;
 	bool OCCLUSION = true;
-	bool TEXTURE = true;
+	int APPLY_TEXTURE = 0;
 
 	bool MOVING_CAMERA = false;
 
 	std::vector<Entity*> scene;
 	std::vector<sLight> lights;
+	Shader* Phong;
 	Shader* Gouraud;
 	Material* EntityMaterial;
 	sUniformData data;

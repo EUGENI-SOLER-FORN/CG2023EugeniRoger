@@ -15,10 +15,12 @@ struct sLight {
 };
 
 struct sUniformData {
+	float ApplyTexture;
 	int nLights;
-	std::vector<sLight> Litghts;
+	std::vector<sLight> Lights;
 	Matrix44 EntityModelMatrix;
 	Matrix44 CameraViewProjection;
+	Vector3 EyePosition;
 	Vector3 AmbientLight;
 };
 class Material
@@ -26,6 +28,7 @@ class Material
 public:
 	Shader* MaterialShader = new Shader();
 	Texture* MaterialTexture = new Texture();
+	Texture* MaterialNormals = new Texture();
 	Vector3 Ambient_K;
 	Vector3 Diffuse_K;
 	Vector3 Specular_K;
@@ -35,13 +38,13 @@ public:
 	Material() { }
 
 	// Setters
-	void setTexture(Texture* t) { MaterialTexture = t; }
+	void setTexture(Texture* t, Texture* n) { MaterialTexture = t; MaterialNormals = n; }
 	void setShininess(float s) { Shininess = s; }
 	void setShader(Shader* s) { MaterialShader = s; }
 	void setReflections(Vector3 K_a, Vector3 K_d, Vector3 K_s) { Ambient_K = K_a; Diffuse_K = K_d; Specular_K = K_s; }
 	
 	// Pass to the GPU
-	void passTexture(){ this->MaterialShader->SetTexture("u_texture", this->MaterialTexture); }
+	void passTexture(){ this->MaterialShader->SetTexture("u_texture", this->MaterialTexture); this->MaterialShader->SetTexture("u_texture_normals", this->MaterialNormals);}
 	void passReflections() { 
 		this->MaterialShader->SetVector3("u_K_a", this->Ambient_K);
 		this->MaterialShader->SetVector3("u_K_d", this->Diffuse_K);
@@ -54,12 +57,14 @@ public:
 	void Enable(const sUniformData& data) {
 		this->MaterialShader->Enable(); 
 		this->passReflections(); this->passShininess(); this->passTexture(); 
-		this->MaterialShader->SetMatrix44("u_model", data.EntityModelMatrix); 
+		this->MaterialShader->SetFloat("u_apply_texture", data.ApplyTexture);
+		this->MaterialShader->SetMatrix44("u_model", data.EntityModelMatrix);
 		this->MaterialShader->SetMatrix44("u_viewprojection", data.CameraViewProjection);
 		this->MaterialShader->SetVector3("u_I_a", data.AmbientLight);
-		this->MaterialShader->SetVector3("u_I_d", data.Litghts[0].IntensityDiffuse);
-		this->MaterialShader->SetVector3("u_I_s", data.Litghts[0].IntensitySpecular);
-		this->MaterialShader->SetVector3("u_light_position", data.Litghts[0].LightPosition);
+		this->MaterialShader->SetVector3("u_I_d", data.Lights[0].IntensityDiffuse);
+		this->MaterialShader->SetVector3("u_I_s", data.Lights[0].IntensitySpecular);
+		this->MaterialShader->SetVector3("u_light_position", data.Lights[0].LightPosition);
+		this->MaterialShader->SetVector3("u_eye_position", data.EyePosition);
 
 	}
 	/*

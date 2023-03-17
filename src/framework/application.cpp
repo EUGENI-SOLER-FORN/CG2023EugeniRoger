@@ -30,13 +30,14 @@ Application::Application(const char* caption, int width, int height)
 	Vector3 eye = Vector3(0, 0, 1);
 	Vector3 center = Vector3(0, 0, 0);
 	this->camera.LookAt(eye, center, up);
-	this->camera.SetPerspective(45, (float)window_width/window_height, 0.01, 100);
+	this->camera.SetPerspective(45, (float)window_width/window_height, 0.0001, 100);
 	
 	// Light settings
+	this->IntensityAmbient = Vector3(20/255.0, 20/255.0, 30/255.0);
 	sLight light0;
-	light0.IntensityDiffuse = Vector3(0.2);
-	light0.IntensitySpecular = Vector3(0.5);
-	light0.LightPosition = Vector3(0);
+	light0.IntensityDiffuse = Vector3(1);
+	light0.IntensitySpecular = Vector3(1);
+	light0.LightPosition = Vector3(2, 2, 3);
 	this->lights.push_back(light0);
 
 	this->ATTRIBUTE = FOV;
@@ -53,18 +54,22 @@ void Application::Init(void)
 	lee->LoadOBJ("meshes/lee.obj");
 	Texture* leeT = new Texture();
 	leeT->Load("textures/lee_color_specular.tga", false);
+	Texture* leeN = new Texture();
+	leeN->Load("textures/lee_normal.tga", false);
 
 	scene.push_back(new Entity());
+
 	scene[0]->modelMatrix.SetTranslation(0, -0.25, 0.5);
 	scene[0]->setMesh(lee);
-	
+
+	Phong = Shader::Get("shaders/phong.vs", "shaders/phong.fs");
 	Gouraud = Shader::Get("shaders/gouraud.vs", "shaders/gouraud.fs");
 	EntityMaterial = new Material();
 
 	EntityMaterial->setShader(Gouraud);
-	EntityMaterial->setTexture(leeT);
-	EntityMaterial->setReflections(Vector3(0.9), Vector3(0.9), Vector3(0.5));
-	EntityMaterial->setShininess(7);
+	EntityMaterial->setTexture(leeT, leeN);
+	EntityMaterial->setReflections(Vector3(1), Vector3(200/255.0), Vector3(1));
+	EntityMaterial->setShininess(10);
 	
 	scene[0]->material = EntityMaterial;
 
@@ -79,8 +84,10 @@ void Application::Render(void)
 
 	data.AmbientLight = this->IntensityAmbient;
 	data.CameraViewProjection = this->camera.GetViewProjectionMatrix();
+	data.EyePosition = this->camera.eye;
 	data.nLights = 1;
-	data.Litghts = this->lights;
+	data.Lights = this->lights;
+	data.ApplyTexture = APPLY_TEXTURE;
 	scene[0]->Render(data);
 
 }
@@ -177,9 +184,22 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 			MODIFY = ORBIT;
 			break;
 
+		case SDLK_g:
+			EntityMaterial->setShader(Gouraud);
+			std::cout << "GOURAUD" << std::endl;
+			break;
+		case SDLK_h:
+			EntityMaterial->setShader(Phong);
+			std::cout << "PHONG" << std::endl;
+			break;
+		case SDLK_t:
+			APPLY_TEXTURE = APPLY_TEXTURE % 2 == 0 ? 1 : 0;
+			break;
 		// Change between tasks
+		/*
 		case SDLK_PERIOD: entityNumber = (entityNumber + 1) % ENTITIES; break;
 		case SDLK_COMMA: entityNumber = (entityNumber + ENTITIES - 1) % ENTITIES;  break;
+		*/
 	}
 	this->camera.UpdateProjectionMatrix();
 	this->camera.LookAt(this->camera.eye, this->camera.center, this->camera.up);
@@ -203,7 +223,7 @@ void Application::OnMouseMove(SDL_MouseButtonEvent event)
 {
 	if (MOVING_CAMERA) {
 		if (MODIFY == ORBIT) {
-//			std::cout << "ORBIT" << std::endl;
+			std::cout << std::endl;
 
 			Vector3 direction = this->camera.eye - this->camera.center;
 			Vector3 rotateX = Vector3(0);
