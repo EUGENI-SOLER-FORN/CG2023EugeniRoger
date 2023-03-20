@@ -47,8 +47,8 @@ void main()
 	vec3 R = normalize(reflect(-L, N));
 
 	vec4 I_p = vec4(u_I_a, 1) * K_a; // Bsse color
-	I_p += K_d* vec4(u_I_d, 1) * dot(L, N); // Diffuse
-	I_p += K_s * vec4(u_I_s, 1) * pow(dot(R, V), u_shine); // Specular
+	I_p += K_d * vec4(u_I_d, 1) * clamp(dot(L, N), 0, 1); // Diffuse
+	I_p += K_s * vec4(u_I_s, 1) * pow(clamp(dot(R, V), 0, 1), u_shine); // Specular
 
 
 	// Set the ouput color per pixel
